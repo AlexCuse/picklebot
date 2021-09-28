@@ -1,0 +1,10 @@
+ [Unit]
+ Description=picklebot.button-siren
+ After=multi-user.target
+
+ [Service]
+ Type=idle
+ ExecStart=/usr/bin/python3 /home/pi/git/picklebot/scripts/button-siren.py
+
+ [Install]
+ WantedBy=multi-user.target
