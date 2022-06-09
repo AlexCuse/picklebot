@@ -1,0 +1,28 @@
+apiVersion: "v2"
+name: "GPIO-Alarm"
+manufacturer: "Picklecorp"
+model: "GPIO-01"
+labels:
+  - "gpio"
+  - "raspberrypi"
+  - "rp4"
+description: "Example GPIO Alarm"
+
+deviceResources:
+  -
+    name: "Alert"
+    isHidden: false
+    description: "Alert State"
+    properties:
+        valueType: "Bool"
+        readWrite: "RW"
+        defaultValue: "true"
+
+deviceCommands:
+  -
+    name: "Alert"
+    isHidden: false
+    readWrite: "RW"
+    resourceOperations:
+      - { deviceResource: "Alert", defaultValue: "false" }
+
