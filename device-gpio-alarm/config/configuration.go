@@ -30,6 +30,7 @@ type AlarmConfig struct {
 	Writable   AlarmWritable
 	AlertPin   int
 	AlarmPin   int
+	Chip       string
 	Name       string
 	RequireAck bool
 	Mode       string
@@ -37,6 +38,7 @@ type AlarmConfig struct {
 
 type AlarmWritable struct {
 	AlarmDuration time.Duration
+	Message       string
 }
 
 // UpdateFromRaw updates the service's full configuration from raw data received from

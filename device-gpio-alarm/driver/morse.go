@@ -1,13 +1,15 @@
 package driver
 
 import (
+	"strings"
 	"time"
 
+	"github.com/alwindoss/morse"
 	"github.com/warthog618/gpiod"
 )
 
 /*
-	We will use morse code to send a 'message' through the configured alarm pin (in example an LED)
+	We will use morseDuration code to send a 'message' through the configured alarm pin (in example an LED)
 
 	International Morse code is composed of five elements:
 
@@ -21,7 +23,7 @@ import (
 var (
 	morseUnit = 50 * time.Millisecond
 
-	morse = map[rune]time.Duration{
+	morseDuration = map[byte]time.Duration{
 		'.': 1 * morseUnit,
 		'-': 3 * morseUnit,
 		'/': 7 * morseUnit,
@@ -29,19 +31,16 @@ var (
 	}
 )
 
-func sendMorse(msg string, ap int) error {
-	line, err := gpiod.RequestLine(chip, ap, gpiod.AsOutput(0))
+func sendMorse(msg string, line *gpiod.Line) error {
+	mhack := morse.NewHacker()
+
+	fmsg, err := mhack.Encode(strings.NewReader(msg))
 
 	if err != nil {
 		return err
 	}
 
-	defer func() {
-		line.Reconfigure(gpiod.AsInput)
-		line.Close()
-	}()
-
-	for _, c := range msg {
+	for _, c := range fmsg {
 		blip := time.Duration(0)
 
 		switch c {
@@ -51,7 +50,7 @@ func sendMorse(msg string, ap int) error {
 			blip = morseUnit
 		}
 
-		time.Sleep(morse[c])
+		time.Sleep(morseDuration[c])
 
 		line.SetValue(0)
 		time.Sleep(blip)

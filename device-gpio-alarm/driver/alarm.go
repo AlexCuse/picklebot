@@ -32,11 +32,6 @@ import (
 	"github.com/edgexfoundry/device-sdk-go/v2/pkg/service"
 )
 
-const (
-	sos  = "... --- ..."
-	chip = "gpiochip0"
-)
-
 type Alarm struct {
 	lc            logger.LoggingClient
 	asyncCh       chan<- *sdkModels.AsyncValues
@@ -81,7 +76,7 @@ func (s *Alarm) Initialize(lc logger.LoggingClient, asyncCh chan<- *sdkModels.As
 }
 
 func (s *Alarm) listen() {
-	l, err := gpiod.RequestLine(chip, s.serviceConfig.Alarm.AlertPin,
+	l, err := gpiod.RequestLine(s.serviceConfig.Alarm.Chip, s.serviceConfig.Alarm.AlertPin,
 		gpiod.WithPullUp,
 		gpiod.LineEdgeRising,
 		gpiod.WithDebounce(10*time.Millisecond),
@@ -113,11 +108,29 @@ func (s *Alarm) listen() {
 }
 
 func (s *Alarm) triggerAlarm() {
+	if s.serviceConfig.Alarm.AlarmPin == 0 {
+		s.lc.Info("Alarm triggered but no output pin configured")
+		return
+	}
+
 	triggered := time.Now()
 
 	s.alarming.Lock()
 	defer s.alarming.Unlock()
-	if err := sendMorse(sos, s.serviceConfig.Alarm.AlarmPin); err != nil {
+
+	line, err := gpiod.RequestLine(s.serviceConfig.Alarm.Chip, s.serviceConfig.Alarm.AlarmPin, gpiod.AsOutput(0))
+
+	if err != nil {
+		s.lc.Errorf("failed to initialize open line on GPIO %v: %s", s.serviceConfig.Alarm.AlarmPin, err.Error())
+		return
+	}
+
+	defer func() {
+		line.Reconfigure(gpiod.AsInput)
+		line.Close()
+	}()
+
+	if err := sendMorse(s.serviceConfig.Alarm.Writable.Message, line); err != nil {
 		s.lc.Errorf("failed to send alarm to %d: %s", s.serviceConfig.Alarm.AlarmPin, err.Error())
 	}
 

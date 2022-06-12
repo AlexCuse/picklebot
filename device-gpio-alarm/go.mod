@@ -1,6 +1,7 @@
 module github.com/alexcuse/device-gpio-alert
 
 require (
+	github.com/alwindoss/morse v1.0.1 // indirect
 	github.com/edgexfoundry/device-sdk-go/v2 v2.2.0
 	github.com/edgexfoundry/go-mod-core-contracts/v2 v2.2.0
 	github.com/warthog618/gpiod v0.8.0
