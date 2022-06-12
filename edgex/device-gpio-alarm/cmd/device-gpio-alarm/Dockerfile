@@ -17,8 +17,8 @@ FROM alpine:3.16
 RUN apk add zeromq-dev
 
 WORKDIR /
-COPY --from=builder /device-gpio-alarm/cmd/device-gpio-alarm/device-gpio-alarm /device-gpio-alarm
-COPY --from=builder /device-gpio-alarm/cmd/device-gpio-alarm/res/ /res
+COPY --from=builder /edgex/device-gpio-alarm/cmd/device-gpio-alarm/device-gpio-alarm /device-gpio-alarm
+COPY --from=builder /edgex/device-gpio-alarm/cmd/device-gpio-alarm/res /res
 
 EXPOSE 59999
 

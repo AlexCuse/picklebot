@@ -27,7 +27,7 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/models"
 	"github.com/warthog618/gpiod"
 
-	"github.com/alexcuse/device-gpio-alert/config"
+	"github.com/alexcuse/picklebot/edgex/device-gpio-alarm/config"
 	sdkModels "github.com/edgexfoundry/device-sdk-go/v2/pkg/models"
 	"github.com/edgexfoundry/device-sdk-go/v2/pkg/service"
 )

@@ -17,7 +17,7 @@
 package main
 
 import (
-	"github.com/alexcuse/device-gpio-alert/driver"
+	"github.com/alexcuse/picklebot/edgex/device-gpio-alarm/driver"
 	"github.com/edgexfoundry/device-sdk-go/v2"
 	"github.com/edgexfoundry/device-sdk-go/v2/pkg/startup"
 )
