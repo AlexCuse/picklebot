@@ -1,0 +1,25 @@
+mode: set
+app-surveillance/main.go:41.13,45.2 3 0
+app-surveillance/main.go:48.135,51.9 3 1
+app-surveillance/main.go:55.2,60.88 3 1
+app-surveillance/main.go:67.2,67.66 1 1
+app-surveillance/main.go:76.2,76.140 1 1
+app-surveillance/main.go:81.2,91.16 4 1
+app-surveillance/main.go:96.2,99.16 2 1
+app-surveillance/main.go:104.2,104.48 1 1
+app-surveillance/main.go:111.2,111.10 1 1
+app-surveillance/main.go:51.9,53.3 1 1
+app-surveillance/main.go:60.88,63.3 2 0
+app-surveillance/main.go:67.66,70.3 2 0
+app-surveillance/main.go:76.140,79.3 2 0
+app-surveillance/main.go:91.16,94.3 2 1
+app-surveillance/main.go:99.16,102.3 2 0
+app-surveillance/main.go:104.48,107.3 2 1
+app-surveillance/main.go:118.71,120.9 2 0
+app-surveillance/main.go:125.2,128.42 3 0
+app-surveillance/main.go:133.2,133.47 1 0
+app-surveillance/main.go:136.2,136.65 1 0
+app-surveillance/main.go:120.9,123.3 2 0
+app-surveillance/main.go:128.42,131.3 2 0
+app-surveillance/main.go:133.47,135.3 1 0
+app-surveillance/main.go:136.65,138.3 1 0
