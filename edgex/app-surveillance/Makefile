@@ -8,3 +8,6 @@ run-docker:
 
 build:
 	$(GOCGO) build -o ./app-surveillance ./main.go
+
+test:
+	$(GOCGO) test ./...

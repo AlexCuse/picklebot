@@ -82,18 +82,7 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 
 	var err error
 
-	// TODO: Replace below functions with built in and/or your custom functions for your use case
-	//       or remove if using Pipeline By Topics below.
-	//       See https://docs.edgexfoundry.org/2.0/microservices/application/BuiltIn/ for list of built-in functions
-	err = app.service.SetDefaultFunctionsPipeline(
-		sample.CaptureSnapshot,
-		sample.LogEventDetails)
-	if err != nil {
-		app.lc.Errorf("SetFunctionsPipeline returned error: %s", err.Error())
-		return -1
-	}
-
-	err = app.service.AddFunctionsPipelineForTopics("Floats", []string{"edgex/events/device/gpio-alarm/#"},
+	err = app.service.AddFunctionsPipelineForTopics("gpio-alarms", []string{"edgex/events/device/gpio-alarm/#"},
 		sample.LogEventDetails,
 		sample.CaptureSnapshot)
 	if err != nil {
@@ -106,15 +95,12 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 		return -1
 	}
 
-	// TODO: Do any required cleanup here, if needed
-
 	return 0
 }
 
 // ProcessConfigUpdates processes the updated configuration for the service's writable configuration.
 // At a minimum it must copy the updated configuration into the service's current configuration. Then it can
 // do any special processing for changes that require more.
-// TODO: Update using your Custom configuration 'writeable' type or remove if not using ListenForCustomConfigChanges
 func (app *myApp) ProcessConfigUpdates(rawWritableConfig interface{}) {
 	updated, ok := rawWritableConfig.(*config.SurveillanceConfig)
 	if !ok {

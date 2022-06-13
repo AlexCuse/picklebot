@@ -19,6 +19,7 @@ package functions
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
@@ -29,13 +30,14 @@ import (
 
 // NewSample ...
 func NewSample(cameraName, snapshotCommandName string) Sample {
-	return Sample{cameraName: cameraName, snapshotCommandName: snapshotCommandName}
+	return Sample{cameraName: cameraName, snapshotCommandName: snapshotCommandName, ackCommand: "Alert"}
 }
 
 // Sample ...
 type Sample struct {
 	cameraName          string
 	snapshotCommandName string
+	ackCommand          string
 }
 
 // LogEventDetails is example of processing an Event and passing the original Event to next function in the pipeline
@@ -100,6 +102,24 @@ func (s *Sample) CaptureSnapshot(cxt interfaces.AppFunctionContext, data interfa
 
 	// add readings from snapshot to the event
 	evt.Readings = append(evt.Readings, er.Event.Readings...)
+
+	return true, evt
+}
+
+func (s *Sample) SendAck(cxt interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
+	cc := cxt.CommandClient()
+
+	evt := data.(dtos.Event)
+
+	er, err := cc.IssueSetCommandByName(context.Background(), evt.DeviceName, s.ackCommand, nil)
+
+	if err != nil {
+		return false, err
+	}
+
+	if er.StatusCode != http.StatusOK {
+		return false, fmt.Errorf("unexpected response from %s for %s", s.ackCommand, evt.DeviceName)
+	}
 
 	return true, evt
 }

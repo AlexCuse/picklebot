@@ -86,7 +86,7 @@ func TestCreateAndRunService_SetFunctionsPipeline_Failed(t *testing.T) {
 		})
 		mockAppService.On("ListenForCustomConfigChanges", mock.Anything, mock.Anything, mock.Anything).
 			Return(nil)
-		mockAppService.On("SetDefaultFunctionsPipeline", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		mockAppService.On("AddFunctionsPipelineForTopics", "gpio-alarms", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(fmt.Errorf("Failed")).Run(func(args mock.Arguments) {
 			setFunctionsPipelineCalled = true
 		})
@@ -114,9 +114,7 @@ func TestCreateAndRunService_MakeItRun_Failed(t *testing.T) {
 		})
 		mockAppService.On("ListenForCustomConfigChanges", mock.Anything, mock.Anything, mock.Anything).
 			Return(nil)
-		mockAppService.On("SetDefaultFunctionsPipeline", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-			Return(nil)
-		mockAppService.On("AddFunctionsPipelineForTopics", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		mockAppService.On("AddFunctionsPipelineForTopics", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(nil)
 		mockAppService.On("MakeItRun").Return(fmt.Errorf("Failed")).Run(func(args mock.Arguments) {
 			makeItRunCalled = true
