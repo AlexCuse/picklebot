@@ -1,6 +1,6 @@
 FROM golang:1.18-alpine3.16 AS builder
 
-WORKDIR /device-gpio-alarm
+WORKDIR /build
 
 RUN apk add --update --no-cache make git gcc libc-dev zeromq-dev libsodium-dev
 
@@ -17,8 +17,8 @@ FROM alpine:3.16
 RUN apk add zeromq-dev
 
 WORKDIR /
-COPY --from=builder /edgex/device-gpio-alarm/cmd/device-gpio-alarm/device-gpio-alarm /device-gpio-alarm
-COPY --from=builder /edgex/device-gpio-alarm/cmd/device-gpio-alarm/res /res
+COPY --from=builder /build/cmd/device-gpio-alarm/device-gpio-alarm /device-gpio-alarm
+COPY --from=builder /build/cmd/device-gpio-alarm/res /res
 
 EXPOSE 59999
 
