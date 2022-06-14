@@ -82,9 +82,12 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 
 	var err error
 
-	err = app.service.AddFunctionsPipelineForTopics("gpio-alarms", []string{"edgex/events/device/gpio-alarm/#"},
-		sample.LogEventDetails,
-		sample.CaptureSnapshot)
+	//AddFunctionsPipelineForTopics("gpio-alarms", []string{"edgex/events/device/gpio-alarm/#"},
+
+	err = app.service.SetDefaultFunctionsPipeline(
+		sample.CaptureSnapshot,
+		sample.SendAck,
+		sample.LogEventDetails)
 	if err != nil {
 		app.lc.Errorf("AddFunctionsPipelineForTopic returned error: %s", err.Error())
 		return -1

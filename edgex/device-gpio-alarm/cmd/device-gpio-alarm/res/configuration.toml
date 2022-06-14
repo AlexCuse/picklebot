@@ -102,7 +102,7 @@ TokenFile = "/tmp/edgex/secrets/device-simple/secrets-token.json"
   AlarmPin = 16
   Chip = "gpiochip0"
   Name = "GPIO-Alarm-1"
-  RequireAck = false
+  RequireAck = true
   [Alarm.Writable]
     AlarmDuration = "5s"
     Message = "SOS"

@@ -94,6 +94,8 @@ func (s *Alarm) listen() {
 					},
 				}
 
+				s.lc.Info("sent alert to event channel")
+
 				if !s.serviceConfig.Alarm.RequireAck {
 					go s.triggerAlarm()
 				}
@@ -194,6 +196,7 @@ func (s *Alarm) HandleWriteCommands(deviceName string, protocols map[string]mode
 		s.lc.Debugf("Alarm.HandleWriteCommands: protocols: %v, resource: %v, parameters: %v, attributes: %v", protocols, reqs[i].DeviceResourceName, params[i], reqs[i].Attributes)
 		switch r.DeviceResourceName {
 		case "Alert":
+			s.lc.Infof("received write command for %s -> Alert", deviceName)
 			if time.Now().Before(s.alertUntil) {
 				go s.triggerAlarm()
 			}

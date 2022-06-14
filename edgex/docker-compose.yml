@@ -29,6 +29,30 @@ services:
       - no-new-privileges:true
     user: root
     command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--overwrite=true"]
+  app-surveillance:
+    build:
+      context: app-surveillance
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:59740:59740"
+    container_name: edgex-app-surveillance
+    hostname: edgex-app-surveillance
+    read_only: true
+    restart: always
+    networks:
+      - edgex-network
+    env_file:
+      - common.env
+    environment:
+      SERVICE_HOST: edgex-app-surveillance
+      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST: edgex-redis
+    depends_on:
+      - consul
+      - metadata
+    security_opt:
+      - no-new-privileges:true
+    user: 2002:2001
+    command: [ "-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--overwrite=true" ]
   device-onvif-camera:
     image: nexus3.edgexfoundry.org:10004/device-onvif-camera-arm64:latest
     ports:

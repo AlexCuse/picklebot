@@ -86,15 +86,15 @@ Type="edgex-messagebus"
   [Trigger.EdgexMessageBus]
   Type = "redis"
     [Trigger.EdgexMessageBus.SubscribeHost]
-    Host = "localhost"
+    Host = "edgex-redis"
     Port = 6379
     Protocol = "redis"
     SubscribeTopics="edgex/events/#"
-    [Trigger.EdgexMessageBus.PublishHost]   # TODO: Remove if service is NOT publishing back to the message bus
-    Host = "localhost"
-    Port = 6379
-    Protocol = "redis"
-    PublishTopic="event-xml"
+    #[Trigger.EdgexMessageBus.PublishHost]   # TODO: Remove if service is NOT publishing back to the message bus
+    #Host = "localhost"
+    #Port = 6379
+    #Protocol = "redis"
+    #PublishTopic="event-xml"
     [Trigger.EdgexMessageBus.Optional]
     authmode = "usernamepassword"  # requied for redis messagebus (secure or insecure).
     secretname = "redisdb"
