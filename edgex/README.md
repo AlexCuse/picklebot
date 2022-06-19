@@ -19,9 +19,11 @@ This EdgeX device service creates alerts based on GPIO sensor input.  It uses ht
 
 ### commands
 
-The only command supported is `Alert`- same as the events pushed off.  Alerts will be for a configured duration and read commands will return true if one is active.
+The only read command supported is `Alert`- same as the events pushed off.  Alerts will be for a configured duration and read commands will return true if one is active.
 
-Write commands will be considered an acknowledgement and will sound the associated alarm if the alert is still active.  If `RequireAck` is configured to true the alarm will not be triggered until acknowledgement is received (via an empty PUT to "Alert")
+Write commands can be sent with a `Level` corresponding to the mapped alarm configuration and will sound the associated alarm if the alert is still active.  
+
+note: If `RequireAck` is configured to true the alarm will not be triggered until acknowledgement is received (via a level PUT to "Alert" - if no level is provided a system configured default will be used)
 
 ## app-surveillance
 

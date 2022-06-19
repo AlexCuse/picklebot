@@ -17,9 +17,7 @@
 package functions
 
 import (
-	"context"
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
@@ -30,7 +28,7 @@ import (
 
 // NewSample ...
 func NewSample(cameraName, snapshotCommandName string) Sample {
-	return Sample{cameraName: cameraName, snapshotCommandName: snapshotCommandName, ackCommand: "Alert"}
+	return Sample{cameraName: cameraName, snapshotCommandName: snapshotCommandName, ackCommand: "Acknowledge"}
 }
 
 // Sample ...
@@ -87,41 +85,4 @@ func (s *Sample) LogEventDetails(ctx interfaces.AppFunctionContext, data interfa
 	// Returning true indicates that the pipeline execution should continue with the next function
 	// using the event passed as input in this case.
 	return true, event
-}
-
-func (s *Sample) CaptureSnapshot(ctx interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
-	cc := ctx.CommandClient()
-
-	evt := data.(dtos.Event)
-
-	if s.cameraName != "" {
-		er, err := cc.IssueGetCommandByName(context.Background(), s.cameraName, s.snapshotCommandName, "no", "yes")
-
-		if err != nil {
-			return false, err
-		}
-
-		// add readings from snapshot to the event
-		evt.Readings = append(evt.Readings, er.Event.Readings...)
-	}
-
-	return true, evt
-}
-
-func (s *Sample) SendAck(ctx interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
-	cc := ctx.CommandClient()
-
-	evt := data.(dtos.Event)
-
-	er, err := cc.IssueSetCommandByName(context.Background(), evt.DeviceName, s.ackCommand, nil)
-
-	if err != nil {
-		return false, err
-	}
-
-	if er.StatusCode != http.StatusOK {
-		return false, fmt.Errorf("unexpected response from %s for %s", s.ackCommand, evt.DeviceName)
-	}
-
-	return true, evt
 }

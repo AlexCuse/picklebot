@@ -99,10 +99,23 @@ TokenFile = "/tmp/edgex/secrets/device-simple/secrets-token.json"
 # Example structured custom configuration
 [Alarm]
   AlertPin = 12
-  AlarmPin = 16
   Chip = "gpiochip0"
   Name = "GPIO-Alarm-1"
+  DefaultLevel = "default"
   RequireAck = true
+
+  [Alarm.Alarms]
+    [Alarm.Alarms.low]
+    Pin = 23
+    DefaultMessage = "this is fine"
+
+    [Alarm.Alarms.default]
+    Pin = 18
+    DefaultMessage = "got it"
+
+    [Alarm.Alarms.high]
+    Pin = 16
+    DefaultMessage = "SOS SOS"
+
   [Alarm.Writable]
     AlarmDuration = "5s"
-    Message = "SOS"
