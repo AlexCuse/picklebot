@@ -14,15 +14,28 @@ deviceResources:
     isHidden: false
     description: "Alert State"
     properties:
-        valueType: "Bool"
-        readWrite: "RW"
-        defaultValue: "true"
+      valueType: "Bool"
+      readWrite: "RW"
+      defaultValue: "true"
+  -
+    name: "Level"
+    isHidden: false
+    description: "Alert State"
+    properties:
+      valueType: "String"
+      readWrite: "W"
+      defaultValue: "DEFAULT"
 
 deviceCommands:
   -
     name: "Alert"
     isHidden: false
-    readWrite: "RW"
+    readWrite: "R"
     resourceOperations:
       - { deviceResource: "Alert", defaultValue: "false" }
+  - name: "Acknowledge"
+    isHidden: false
+    readWrite: "W"
+    resourceOperations:
+      - { deviceResource: "Level", defaultValue: "DEFAULT" }
 

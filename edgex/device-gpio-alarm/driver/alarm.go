@@ -19,6 +19,7 @@ package driver
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"sync"
 	"time"
 
@@ -68,7 +69,9 @@ func (s *Alarm) Initialize(lc logger.LoggingClient, asyncCh chan<- *sdkModels.As
 		return fmt.Errorf("unable to listen for changes for 'Alarm.Writable' custom configuration: %s", err.Error())
 	}
 
-	lc.Infof("Setting up GPIO alarm at alert: %v alarm: %v", s.serviceConfig.Alarm.AlertPin, s.serviceConfig.Alarm.AlarmPin)
+	for k, v := range s.serviceConfig.Alarm.Alarms {
+		lc.Infof("Setting up GPIO alarm at alert: %v level: %v alarm: %v (default message: %q)", s.serviceConfig.Alarm.AlertPin, k, v.Pin, v.DefaultMessage)
+	}
 
 	s.listen()
 
@@ -97,7 +100,7 @@ func (s *Alarm) listen() {
 				s.lc.Info("sent alert to event channel")
 
 				if !s.serviceConfig.Alarm.RequireAck {
-					go s.triggerAlarm()
+					go s.triggerAlarm(s.serviceConfig.Alarm.DefaultLevel)
 				}
 				s.alertUntil = time.Now().Add(s.serviceConfig.Alarm.Writable.AlarmDuration)
 			}
@@ -109,21 +112,35 @@ func (s *Alarm) listen() {
 	s.onClose = l.Close
 }
 
-func (s *Alarm) triggerAlarm() {
-	if s.serviceConfig.Alarm.AlarmPin == 0 {
-		s.lc.Info("Alarm triggered but no output pin configured")
+func (s *Alarm) triggerAlarm(level string) {
+	level = strings.ToLower(level)
+	alarm, found := s.serviceConfig.Alarm.Alarms[level]
+
+	if !found {
+		if s.serviceConfig.Alarm.DefaultLevel != "" {
+			s.lc.Warnf("alarm requested for invalid level %q using system default %q", level, s.serviceConfig.Alarm.DefaultLevel)
+			level = s.serviceConfig.Alarm.DefaultLevel
+		} else {
+			s.lc.Errorf("alarm requested for invalid level %q using system default %q", level, s.serviceConfig.Alarm.DefaultLevel)
+			return
+		}
+	}
+
+	if alarm.Pin == 0 {
+		s.lc.Infof("Alarm triggered for level %q but no output pin configured", level)
 		return
 	}
 
 	triggered := time.Now()
 
+	// TODO: send through channels (1 per pin) instead of locking
 	s.alarming.Lock()
 	defer s.alarming.Unlock()
 
-	line, err := gpiod.RequestLine(s.serviceConfig.Alarm.Chip, s.serviceConfig.Alarm.AlarmPin, gpiod.AsOutput(0))
+	line, err := gpiod.RequestLine(s.serviceConfig.Alarm.Chip, alarm.Pin, gpiod.AsOutput(0))
 
 	if err != nil {
-		s.lc.Errorf("failed to initialize open line on GPIO %v: %s", s.serviceConfig.Alarm.AlarmPin, err.Error())
+		s.lc.Errorf("failed to initialize open line on GPIO %v for %q: %s", alarm.Pin, level, err.Error())
 		return
 	}
 
@@ -132,8 +149,8 @@ func (s *Alarm) triggerAlarm() {
 		line.Close()
 	}()
 
-	if err := sendMorse(s.serviceConfig.Alarm.Writable.Message, line); err != nil {
-		s.lc.Errorf("failed to send alarm to %d: %s", s.serviceConfig.Alarm.AlarmPin, err.Error())
+	if err := sendMorse(alarm.DefaultMessage, line); err != nil {
+		s.lc.Errorf("failed to send alarm to %d for %q: %s", alarm.Pin, level, err.Error())
 	}
 
 	s.lc.Infof("Alarm wait %q", time.Since(triggered).String())
@@ -190,20 +207,22 @@ func (s *Alarm) HandleReadCommands(deviceName string, protocols map[string]model
 // command.
 func (s *Alarm) HandleWriteCommands(deviceName string, protocols map[string]models.ProtocolProperties, reqs []sdkModels.CommandRequest,
 	params []*sdkModels.CommandValue) error {
-	var err error
-
 	for i, r := range reqs {
-		s.lc.Debugf("Alarm.HandleWriteCommands: protocols: %v, resource: %v, parameters: %v, attributes: %v", protocols, reqs[i].DeviceResourceName, params[i], reqs[i].Attributes)
-		switch r.DeviceResourceName {
-		case "Alert":
-			s.lc.Infof("received write command for %s -> Alert", deviceName)
-			if time.Now().Before(s.alertUntil) {
-				go s.triggerAlarm()
-			}
+		s.lc.Debugf("Alarm.HandleWriteCommands: protocols: %v, resource: %v, parameters: %+v, attributes: %+v", protocols, reqs[i].DeviceResourceName, params[i], reqs[i].Attributes)
 
+		switch r.DeviceResourceName {
+		case "Level":
+			level, err := params[i].StringValue()
+			if err != nil {
+				return err
+			}
+			s.lc.Infof("received %s update for %s -> %q", r.DeviceResourceName, deviceName, level)
+			if time.Now().Before(s.alertUntil) {
+				go s.triggerAlarm(level)
+			}
 		}
 	}
-	return err
+	return nil
 }
 
 // Stop the protocol-specific DS code to shutdown gracefully, or

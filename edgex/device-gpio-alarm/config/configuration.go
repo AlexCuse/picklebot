@@ -27,18 +27,25 @@ type ServiceConfig struct {
 // AlarmConfig is example of service's custom structured configuration that is specified in the service's
 // configuration.toml file and Configuration Provider (aka Consul), if enabled.
 type AlarmConfig struct {
-	Writable   AlarmWritable
-	AlertPin   int
-	AlarmPin   int
-	Chip       string
-	Name       string
-	RequireAck bool
-	Mode       string
+	Writable AlarmWritable
+	AlertPin int
+	// Alarms maps GPIO pins to their default messages
+	// which will be sent to the pin in morse code by default
+	Alarms       map[string]Alarm
+	Chip         string
+	Name         string
+	RequireAck   bool
+	Mode         string
+	DefaultLevel string
 }
 
 type AlarmWritable struct {
 	AlarmDuration time.Duration
-	Message       string
+}
+
+type Alarm struct {
+	Pin            int
+	DefaultMessage string
 }
 
 // UpdateFromRaw updates the service's full configuration from raw data received from

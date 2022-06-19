@@ -134,7 +134,7 @@ Type="edgex-messagebus"
 DeviceNames = "Random-Boolean-Device, Random-Integer-Device, Random-UnsignedInteger-Device, Random-Float-Device, Random-Binary-Device"
 
 # TODO: Replace this section with your actual structured custom configuration section
-#       or remove if you don't have a need for structured custom configuration
+#       or remove if you don't have a need for structured custom configurationAlarmConfig
 # This can be any structure you need, but it can not contain slices. Use a maps instead of slices.
 # For more details see: https://docs.edgexfoundry.org/2.0/microservices/application/GeneralAppServiceConfig/#custom-configuration
 [AppCustom]
