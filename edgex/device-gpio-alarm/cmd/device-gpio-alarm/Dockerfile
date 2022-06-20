@@ -20,7 +20,5 @@ WORKDIR /
 COPY --from=builder /build/cmd/device-gpio-alarm/device-gpio-alarm /device-gpio-alarm
 COPY --from=builder /build/cmd/device-gpio-alarm/res /res
 
-EXPOSE 59999
-
 ENTRYPOINT ["/device-gpio-alarm"]
 CMD ["-cp=consul.http://localhost:8500", "--registry", "--confdir=/res"]
