@@ -45,7 +45,8 @@ services:
       - common.env
     environment:
       SERVICE_HOST: edgex-app-surveillance
-      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST: edgex-redis
+      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-redis
+      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_SUBSCRIBETOPICS: edgex/events/device/GPIO-Alarm/#
     depends_on:
       - consul
       - metadata

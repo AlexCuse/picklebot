@@ -139,4 +139,4 @@ DeviceNames = "Random-Boolean-Device, Random-Integer-Device, Random-UnsignedInte
 # For more details see: https://docs.edgexfoundry.org/2.0/microservices/application/GeneralAppServiceConfig/#custom-configuration
 [Surveillance]
 CameraName="ipcam"
-SnapshotCommandName="snapshot"
+SnapshotCommandName="Snapshot"
