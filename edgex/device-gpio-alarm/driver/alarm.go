@@ -17,10 +17,10 @@
 package driver
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
@@ -40,7 +40,25 @@ type Alarm struct {
 	serviceConfig *config.ServiceConfig
 	alertUntil    time.Time
 	onClose       func() error
-	alarming      sync.Mutex
+	alarms        map[string]*alarmPin
+}
+
+type alarmEvent struct {
+	level string
+	when  time.Time
+}
+
+type alarmPin struct {
+	ch  chan alarmEvent
+	pin int
+}
+
+func (s *Alarm) trigger(level string) {
+	ap, found := s.alarms[level]
+
+	if found {
+		ap.ch <- alarmEvent{level: level, when: time.Now().UTC()}
+	}
 }
 
 // Initialize performs protocol-specific initialization for the device
@@ -50,6 +68,7 @@ func (s *Alarm) Initialize(lc logger.LoggingClient, asyncCh chan<- *sdkModels.As
 	s.asyncCh = asyncCh
 	s.deviceCh = deviceCh
 	s.serviceConfig = &config.ServiceConfig{}
+	s.alarms = make(map[string]*alarmPin)
 
 	ds := service.RunningService()
 
@@ -71,6 +90,7 @@ func (s *Alarm) Initialize(lc logger.LoggingClient, asyncCh chan<- *sdkModels.As
 
 	for k, v := range s.serviceConfig.Alarm.Alarms {
 		lc.Infof("Setting up GPIO alarm at alert: %v level: %v alarm: %v (default message: %q)", s.serviceConfig.Alarm.AlertPin, k, v.Pin, v.DefaultMessage)
+		s.alarms[k] = &alarmPin{ch: make(chan alarmEvent, 10), pin: v.Pin}
 	}
 
 	s.listen()
@@ -79,6 +99,23 @@ func (s *Alarm) Initialize(lc logger.LoggingClient, asyncCh chan<- *sdkModels.As
 }
 
 func (s *Alarm) listen() {
+	listenerCtx, stopListeners := context.WithCancel(context.Background())
+
+	// start listeners for alarm output
+	for _, v := range s.alarms {
+		go func(a *alarmPin) {
+			for {
+				select {
+				case <-listenerCtx.Done():
+					return
+				case l := <-a.ch:
+					s.runAlarm(l)
+				}
+			}
+		}(v)
+	}
+
+	// listen for GPIO sensor input
 	l, err := gpiod.RequestLine(s.serviceConfig.Alarm.Chip, s.serviceConfig.Alarm.AlertPin,
 		gpiod.WithPullUp,
 		gpiod.LineEdgeRising,
@@ -100,7 +137,7 @@ func (s *Alarm) listen() {
 				s.lc.Info("sent alert to event channel")
 
 				if !s.serviceConfig.Alarm.RequireAck {
-					go s.triggerAlarm(s.serviceConfig.Alarm.DefaultLevel)
+					go s.trigger(s.serviceConfig.Alarm.DefaultLevel)
 				}
 				s.alertUntil = time.Now().Add(s.serviceConfig.Alarm.Writable.AlarmDuration)
 			}
@@ -109,38 +146,36 @@ func (s *Alarm) listen() {
 		s.lc.Errorf("failed to read GPIO %d: %s", s.serviceConfig.Alarm.AlertPin, err.Error())
 	}
 
-	s.onClose = l.Close
+	s.onClose = func() error {
+		// close listener context
+		stopListeners()
+		return l.Close()
+	}
 }
 
-func (s *Alarm) triggerAlarm(level string) {
-	level = strings.ToLower(level)
-	alarm, found := s.serviceConfig.Alarm.Alarms[level]
+func (s *Alarm) runAlarm(event alarmEvent) {
+	lev := strings.ToLower(event.level)
+	alarm, found := s.serviceConfig.Alarm.Alarms[lev]
 
 	if !found {
 		if s.serviceConfig.Alarm.DefaultLevel != "" {
-			s.lc.Warnf("alarm requested for invalid level %q using system default %q", level, s.serviceConfig.Alarm.DefaultLevel)
-			level = s.serviceConfig.Alarm.DefaultLevel
+			s.lc.Warnf("alarm requested for invalid event %q using system default %q", lev, s.serviceConfig.Alarm.DefaultLevel)
+			lev = s.serviceConfig.Alarm.DefaultLevel
 		} else {
-			s.lc.Errorf("alarm requested for invalid level %q using system default %q", level, s.serviceConfig.Alarm.DefaultLevel)
+			s.lc.Errorf("alarm requested for invalid event %q using system default %q", lev, s.serviceConfig.Alarm.DefaultLevel)
 			return
 		}
 	}
 
 	if alarm.Pin == 0 {
-		s.lc.Infof("Alarm triggered for level %q but no output pin configured", level)
+		s.lc.Infof("Alarm triggered for event %q but no output pin configured", lev)
 		return
 	}
-
-	triggered := time.Now()
-
-	// TODO: send through channels (1 per pin) instead of locking
-	s.alarming.Lock()
-	defer s.alarming.Unlock()
 
 	line, err := gpiod.RequestLine(s.serviceConfig.Alarm.Chip, alarm.Pin, gpiod.AsOutput(0))
 
 	if err != nil {
-		s.lc.Errorf("failed to initialize open line on GPIO %v for %q: %s", alarm.Pin, level, err.Error())
+		s.lc.Errorf("failed to initialize open line on GPIO %v for %q: %s", alarm.Pin, event, err.Error())
 		return
 	}
 
@@ -150,10 +185,10 @@ func (s *Alarm) triggerAlarm(level string) {
 	}()
 
 	if err := sendMorse(alarm.DefaultMessage, line); err != nil {
-		s.lc.Errorf("failed to send alarm to %d for %q: %s", alarm.Pin, level, err.Error())
+		s.lc.Errorf("failed to send alarm to %d for %q: %s", alarm.Pin, event, err.Error())
 	}
 
-	s.lc.Infof("Alarm wait %q", time.Since(triggered).String())
+	s.lc.Infof("Alarm wait %q", time.Since(event.when).String())
 }
 
 // ProcessCustomConfigChanges ...
@@ -218,7 +253,7 @@ func (s *Alarm) HandleWriteCommands(deviceName string, protocols map[string]mode
 			}
 			s.lc.Infof("received %s update for %s -> %q", r.DeviceResourceName, deviceName, level)
 			if time.Now().Before(s.alertUntil) {
-				go s.triggerAlarm(level)
+				go s.trigger(level)
 			}
 		}
 	}
