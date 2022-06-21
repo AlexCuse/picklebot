@@ -42,7 +42,9 @@ type Sample struct {
 // For more details on the Context API got here: https://docs.edgexfoundry.org/1.3/microservices/application/ContextAPI/
 func (s *Sample) LogEventDetails(ctx interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
 	lc := ctx.LoggingClient()
-	lc.Debugf("LogEventDetails called in pipeline '%s'", ctx.PipelineId())
+	receiveTopic, _ := ctx.GetValue(interfaces.RECEIVEDTOPIC)
+
+	lc.Infof("LogEventDetails called in pipeline '%s' on '%s'", ctx.PipelineId(), receiveTopic)
 
 	if data == nil {
 		// Go here for details on Error Handle: https://docs.edgexfoundry.org/1.3/microservices/application/ErrorHandling/

@@ -20,7 +20,5 @@ WORKDIR /
 COPY --from=builder /build/app-surveillance /app-surveillance
 COPY --from=builder /build/res /res
 
-EXPOSE 59999
-
 ENTRYPOINT ["/app-surveillance"]
 CMD ["-cp=consul.http://localhost:8500", "--registry", "--confdir=/res"]

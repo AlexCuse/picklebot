@@ -38,13 +38,6 @@ type SurveillanceConfig struct {
 	SnapshotCommandName string
 }
 
-// HostInfo is example struct for defining connection information for external service
-type HostInfo struct {
-	Host     string
-	Port     int
-	Protocol string
-}
-
 // TODO: Update using your Custom configuration type.
 // UpdateFromRaw updates the service's full configuration from raw data received from
 // the Service Provider.
