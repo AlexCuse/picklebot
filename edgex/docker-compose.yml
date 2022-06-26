@@ -46,6 +46,7 @@ services:
     environment:
       SERVICE_HOST: edgex-app-surveillance
       TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-redis
+      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_HOST: edgex-redis
       TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_SUBSCRIBETOPICS: edgex/events/device/GPIO-Alarm/#
     depends_on:
       - consul
@@ -53,6 +54,32 @@ services:
     security_opt:
       - no-new-privileges:true
     user: 2002:2001
+    command: [ "-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--overwrite=true" ]
+  app-archive:
+    build:
+      context: app-archive
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:59741:59741"
+    container_name: edgex-app-archive
+    hostname: edgex-app-archive
+    read_only: true
+    restart: always
+    networks:
+      - edgex-network
+    env_file:
+      - common.env
+    environment:
+      SERVICE_HOST: edgex-app-archive
+      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-redis
+    depends_on:
+      - consul
+      - metadata
+    security_opt:
+      - no-new-privileges:true
+    user: 2002:2001
+    volumes:
+      - "./alarm-data:/data"
     command: [ "-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--overwrite=true" ]
   device-onvif-camera:
     image: nexus3.edgexfoundry.org:10004/device-onvif-camera-arm64:latest
@@ -219,5 +246,3 @@ volumes:
   consul-config: {}
   consul-data: {}
   db-data: {}
-  kuiper-data: {}
-

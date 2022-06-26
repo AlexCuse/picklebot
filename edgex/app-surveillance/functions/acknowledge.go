@@ -16,6 +16,7 @@ package functions
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -41,6 +42,10 @@ func (s *Sample) Acknowledge(ctx interfaces.AppFunctionContext, data interface{}
 			}
 		}
 	}
+
+	response, _ := json.Marshal(evt)
+
+	ctx.SetResponseData(response)
 
 	return true, evt
 }
