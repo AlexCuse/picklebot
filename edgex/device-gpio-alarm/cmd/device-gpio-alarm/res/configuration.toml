@@ -62,6 +62,10 @@ PublishTopicPrefix = "edgex/events/device" # /<device-profile-name>/<device-name
   AutoReconnect = "true"
   ConnectTimeout = "5" # Seconds
   SkipCertVerify = "false" # Only used if Cert/Key file or Cert/Key PEMblock are specified
+  Format = ""
+  AutoProvision = ""
+  Username = ""
+  Password = ""
 
 # Example SecretStore configuration.
 # Only used when EDGEX_SECURITY_SECRET_STORE=true

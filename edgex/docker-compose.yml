@@ -20,10 +20,18 @@ services:
       - common.env
     environment:
       SERVICE_HOST: edgex-device-gpio-alarm
-      MESSAGEQUEUE_HOST: edgex-redis
+      MESSAGEQUEUE_HOST: edgex-nats
+      MESSAGEQUEUE_PROTOCOL: nats
+      MESSAGEQUEUE_TYPE: nats-core
+      MESSAGEQUEUE_PORT: 4222
+      MESSAGEQUEUE_PUBLISHTOPICPREFIX: edgex/events/device
+      MESSAGEQUEUE_OPTIONAL_FORMAT: nats
+      MESSAGEQUEUE_OPTIONAL_USERNAME: edgex
+      MESSAGEQUEUE_OPTIONAL_PASSWORD: edgex
     depends_on:
       - consul
       - metadata
+      - nats
     privileged: true
     security_opt:
       - no-new-privileges:true
@@ -45,12 +53,19 @@ services:
       - common.env
     environment:
       SERVICE_HOST: edgex-app-surveillance
-      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-redis
-      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_HOST: edgex-redis
+      TRIGGER_EDGEXMESSAGEBUS_TYPE: nats-jetstream
+      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-nats
       TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_SUBSCRIBETOPICS: edgex/events/device/GPIO-Alarm/#
+      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_HOST: edgex-nats
+      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_PUBLISHTOPIC: alarms/acknowledged
+      TRIGGER_EDGEXMESSAGEBUS_OPTIONAL_FORMAT: nats
+      TRIGGER_EDGEXMESSAGEBUS_OPTIONAL_AUTOPROVISION: true
+      TRIGGER_EDGEXMESSAGEBUS_OPTIONAL_USERNAME: edgex
+      TRIGGER_EDGEXMESSAGEBUS_OPTIONAL_PASSWORD: edgex
     depends_on:
       - consul
       - metadata
+      - nats
     security_opt:
       - no-new-privileges:true
     user: 2002:2001
@@ -71,10 +86,18 @@ services:
       - common.env
     environment:
       SERVICE_HOST: edgex-app-archive
-      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-redis
+      TRIGGER_EDGEXMESSAGEBUS_TYPE: nats-jetstream
+      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-nats
+      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_SUBSCRIBETOPICS: alarms/acknowledged
+      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_HOST: edgex-nats
+      TRIGGER_EDGEXMESSAGEBUS_OPTIONAL_FORMAT: nats
+      TRIGGER_EDGEXMESSAGEBUS_OPTIONAL_AUTOPROVISION: true
+      TRIGGER_EDGEXMESSAGEBUS_OPTIONAL_USERNAME: edgex
+      TRIGGER_EDGEXMESSAGEBUS_OPTIONAL_PASSWORD: edgex
     depends_on:
       - consul
       - metadata
+      - nats
     security_opt:
       - no-new-privileges:true
     user: 2002:2001
@@ -95,7 +118,14 @@ services:
       - common.env
     environment:
       SERVICE_HOST: edgex-device-onvif-camera
-      MESSAGEQUEUE_HOST: edgex-redis
+      MESSAGEQUEUE_HOST: edgex-nats
+      MESSAGEQUEUE_PROTOCOL: nats
+      MESSAGEQUEUE_TYPE: nats-core
+      MESSAGEQUEUE_PORT: 4222
+      MESSAGEQUEUE_PUBLISHTOPICPREFIX: edgex/events/device
+      MESSAGEQUEUE_OPTIONAL_FORMAT: nats
+      MESSAGEQUEUE_OPTIONAL_USERNAME: edgex
+      MESSAGEQUEUE_OPTIONAL_PASSWORD: edgex
     depends_on:
       - consul
       - metadata
@@ -241,6 +271,19 @@ services:
     security_opt:
       - no-new-privileges:true
     user: 2002:2001
+  nats:
+    container_name: edgex-nats
+    image: nats:2
+    ports:
+      - "0.0.0.0:4222:4222"
+    networks:
+      edgex_edgex-network: { }
+    restart: unless-stopped
+    command: [ "-js", "--user", "edgex", "--pass", "edgex" ]
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
 version: '3.7'
 volumes:
   consul-config: {}

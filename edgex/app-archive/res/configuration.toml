@@ -98,7 +98,10 @@ Type="edgex-messagebus"
     [Trigger.EdgexMessageBus.Optional]
     authmode = "usernamepassword"  # requied for redis messagebus (secure or insecure).
     secretname = "redisdb"
-
+    Format = ""
+    AutoProvision = ""
+    Username = ""
+    Password = ""
 # TODO: If using mqtt messagebus, Uncomment this section and remove above [Trigger] section,
 #       Otherwise remove this commented out block
 #[Trigger]
