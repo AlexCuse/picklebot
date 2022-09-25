@@ -90,9 +90,11 @@ func savePNG(ctx interfaces.AppFunctionContext, data interface{}) (bool, interfa
 		cameraName string
 	)
 
+	lowerImageName := strings.ToLower(imageResourceName)
+
 	for _, r := range evt.Readings {
 		switch strings.ToLower(r.ResourceName) {
-		case imageResourceName:
+		case lowerImageName:
 			imageBytes = r.BinaryValue
 			cameraName = r.DeviceName
 			timestamp = r.Origin
