@@ -1,8 +1,6 @@
-module app-surveillance
+module github.com/alexcuse/picklebot/edgex/app-surveillance
 
-go 1.17
-
-replace github.com/alexcuse/app-surveillance => ../
+go 1.18
 
 require (
 	github.com/edgexfoundry/app-functions-sdk-go/v2 v2.3.0-dev.41

@@ -1,4 +1,4 @@
-module app-archive
+module github.com/alexcuse/picklebot/edgex/app-archive
 
 go 1.18
 

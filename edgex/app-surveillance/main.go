@@ -20,8 +20,8 @@ import (
 	"os"
 	"reflect"
 
-	"app-surveillance/config"
-	"app-surveillance/functions"
+	"github.com/alexcuse/picklebot/edgex/app-surveillance/config"
+	"github.com/alexcuse/picklebot/edgex/app-surveillance/functions"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg"
 	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
