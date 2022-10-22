@@ -98,6 +98,20 @@ Type="edgex-messagebus"
     [Trigger.EdgexMessageBus.Optional]
     authmode = "usernamepassword"  # requied for redis messagebus (secure or insecure).
     secretname = "redisdb"
+    ClientId = "app-archive"
+    Format = "nats"
+    AutoProvision = "false"
+    Subject = ""
+    Durable = ""
+    Username = ""
+    Password = ""
+    AutoReconnect = "true"
+    ConnectTimeout = "5"
+    SkipCertVerify = "false"
+    KeyFile = ""
+    CertFile = ""
+    NKeySeedFile = ""
+    CredentialsFile = ""
 
 # TODO: If using mqtt messagebus, Uncomment this section and remove above [Trigger] section,
 #       Otherwise remove this commented out block

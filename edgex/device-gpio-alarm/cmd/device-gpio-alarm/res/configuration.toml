@@ -52,9 +52,7 @@ AuthMode = "usernamepassword"  # required for redis messagebus (secure or insecu
 SecretName = "redisdb"
 PublishTopicPrefix = "edgex/events/device" # /<device-profile-name>/<device-name>/<source-name> will be added to this Publish Topic prefix
   [MessageQueue.Optional]
-  # Default MQTT Specific options that need to be here to enable environment variable overrides of them
-  # Client Identifiers
-  ClientId = "device-simple"
+  ClientId = "device-gpio-alarm"
   # Connection information
   Qos = "0" # Quality of Sevice values are 0 (At most once), 1 (At least once) or 2 (Exactly once)
   KeepAlive = "10" # Seconds (must be 2 or greater)
@@ -62,6 +60,15 @@ PublishTopicPrefix = "edgex/events/device" # /<device-profile-name>/<device-name
   AutoReconnect = "true"
   ConnectTimeout = "5" # Seconds
   SkipCertVerify = "false" # Only used if Cert/Key file or Cert/Key PEMblock are specified
+  AutoProvision = "false"
+  Subject = ""
+  Durable = ""
+  Username = ""
+  Password = ""
+  KeyFile = ""
+  CertFile = ""
+  NKeySeedFile = ""
+  CredentialsFile = ""
 
 # Example SecretStore configuration.
 # Only used when EDGEX_SECURITY_SECRET_STORE=true
