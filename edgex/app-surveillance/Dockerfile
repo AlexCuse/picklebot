@@ -2,7 +2,7 @@ FROM golang:1.18-alpine3.16 AS builder
 
 WORKDIR /build
 
-RUN apk add --update --no-cache make git gcc libc-dev zeromq-dev libsodium-dev
+RUN apk add --update --no-cache make git
 
 COPY go.mod go.mod
 
@@ -13,8 +13,6 @@ COPY . .
 RUN make build
 
 FROM alpine:3.16
-
-RUN apk add zeromq-dev
 
 WORKDIR /
 COPY --from=builder /build/app-surveillance /app-surveillance

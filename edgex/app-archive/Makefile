@@ -1,4 +1,4 @@
-GOCGO=CGO_ENABLED=1 GO111MODULE=on go
+GOCGO=CGO_ENABLED=0 GO111MODULE=on go
 
 docker:
 	docker build -t app-archive:0.0.0 -f ./Dockerfile .
