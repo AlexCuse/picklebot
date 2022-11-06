@@ -33,10 +33,10 @@ Port = 8500
 Type = "consul"
 
 [Clients]
-  [Clients.core-data]
-  Protocol = "http"
-  Host = "localhost"
-  Port = 59880
+  #[Clients.core-data]
+  #Protocol = "http"
+  #Host = "localhost"
+  #Port = 59880
 
   [Clients.core-metadata]
   Protocol = "http"

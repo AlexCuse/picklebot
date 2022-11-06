@@ -28,7 +28,7 @@ services:
     security_opt:
       - no-new-privileges:true
     user: root
-    command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--overwrite=true"]
+    command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry","--overwrite=true"]
   app-surveillance:
     build:
       context: app-surveillance
@@ -54,7 +54,7 @@ services:
     security_opt:
       - no-new-privileges:true
     user: 2002:2001
-    command: [ "-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--overwrite=true" ]
+    command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry","--overwrite=true"]
   app-archive:
     build:
       context: app-archive
@@ -80,7 +80,7 @@ services:
     user: 2002:2001
     volumes:
       - "./alarm-data:/data"
-    command: [ "-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--overwrite=true" ]
+    command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry","--overwrite=true"]
   device-onvif-camera:
     image: nexus3.edgexfoundry.org:10004/device-onvif-camera-arm64:latest
     ports:
@@ -95,6 +95,7 @@ services:
       - common.env
     environment:
       SERVICE_HOST: edgex-device-onvif-camera
+      DEVICE_DISCOVERY_ENABLED: "false"
       MESSAGEQUEUE_HOST: edgex-redis
     depends_on:
       - consul
@@ -102,6 +103,7 @@ services:
     security_opt:
       - no-new-privileges:true
     user: 2002:2001
+    command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry"]
 
 # edgex core services
   command:
@@ -112,7 +114,7 @@ services:
       - metadata
     environment:
       CLIENTS_CORE_COMMAND_HOST: edgex-core-command
-      CLIENTS_CORE_DATA_HOST: edgex-core-data
+      #CLIENTS_CORE_DATA_HOST: edgex-core-data
       CLIENTS_CORE_METADATA_HOST: edgex-core-metadata
       CLIENTS_SUPPORT_NOTIFICATIONS_HOST: edgex-support-notifications
       CLIENTS_SUPPORT_SCHEDULER_HOST: edgex-support-scheduler
@@ -152,7 +154,7 @@ services:
     container_name: edgex-redis
     environment:
       CLIENTS_CORE_COMMAND_HOST: edgex-core-command
-      CLIENTS_CORE_DATA_HOST: edgex-core-data
+      #CLIENTS_CORE_DATA_HOST: edgex-core-data
       CLIENTS_CORE_METADATA_HOST: edgex-core-metadata
       CLIENTS_SUPPORT_NOTIFICATIONS_HOST: edgex-support-notifications
       CLIENTS_SUPPORT_SCHEDULER_HOST: edgex-support-scheduler
@@ -180,7 +182,7 @@ services:
       - notifications
     environment:
       CLIENTS_CORE_COMMAND_HOST: edgex-core-command
-      CLIENTS_CORE_DATA_HOST: edgex-core-data
+      #CLIENTS_CORE_DATA_HOST: edgex-core-data
       CLIENTS_CORE_METADATA_HOST: edgex-core-metadata
       CLIENTS_SUPPORT_NOTIFICATIONS_HOST: edgex-support-notifications
       CLIENTS_SUPPORT_SCHEDULER_HOST: edgex-support-scheduler
@@ -207,7 +209,7 @@ services:
       - database
     environment:
       CLIENTS_CORE_COMMAND_HOST: edgex-core-command
-      CLIENTS_CORE_DATA_HOST: edgex-core-data
+      #CLIENTS_CORE_DATA_HOST: edgex-core-data
       CLIENTS_CORE_METADATA_HOST: edgex-core-metadata
       CLIENTS_SUPPORT_NOTIFICATIONS_HOST: edgex-support-notifications
       CLIENTS_SUPPORT_SCHEDULER_HOST: edgex-support-scheduler
@@ -235,7 +237,7 @@ services:
     networks:
       edgex-network: {}
     ports:
-      - 4000:4000/tcp
+      - 127.0.0.1:4000:4000/tcp
     read_only: true
     restart: always
     security_opt:

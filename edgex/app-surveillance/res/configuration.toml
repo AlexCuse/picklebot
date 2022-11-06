@@ -61,10 +61,10 @@ TokenFile = "/tmp/edgex/secrets/new-app-service/secrets-token.json"
   AuthType = "X-Vault-Token"
 
 [Clients]
-  [Clients.core-data]
-  Protocol = "http"
-  Host = "localhost"
-  Port = 59880
+  #[Clients.core-data]
+  #Protocol = "http"
+  #Host = "localhost"
+  #Port = 59880
 
   [Clients.core-metadata]
   Protocol = "http"
