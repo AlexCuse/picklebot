@@ -1,0 +1,289 @@
+# this compose file assumes locally built docker images for messagebus-connected edgex services
+# to enable NATS as a messagebus option.  These should be built using `make docker-nats`
+# which by default will tag the images as `edgexfoundry:{service-name}:0.0.0-dev
+
+networks:
+  edgex-network:
+    driver: bridge
+
+services:
+  device-gpio-alarm:
+    build:
+      context: device-gpio-alarm
+      dockerfile: cmd/device-gpio-alarm/Dockerfile
+    ports:
+      - "127.0.0.1:59985:59985"
+    container_name: edgex-device-gpio-alarm
+    hostname: edgex-device-gpio-alarm
+    read_only: true
+    restart: always
+    networks:
+      - edgex-network
+    env_file:
+      - common.env
+    environment:
+      SERVICE_HOST: edgex-device-gpio-alarm
+      MESSAGEQUEUE_HOST: edgex-nats
+      MESSAGEQUEUE_TYPE: "nats-core"
+      MESSAGEQUEUE_PROTOCOL: "tcp"
+    depends_on:
+      - consul
+      - metadata
+    privileged: true
+    security_opt:
+      - no-new-privileges:true
+    user: root
+    command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry","--overwrite=true"]
+  app-surveillance:
+    build:
+      context: app-surveillance
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:59740:59740"
+    container_name: edgex-app-surveillance
+    hostname: edgex-app-surveillance
+    read_only: true
+    restart: always
+    networks:
+      - edgex-network
+    env_file:
+      - common.env
+    environment:
+      SERVICE_HOST: edgex-app-surveillance
+      TRIGGER_EDGEXMESSAGEBUS_TYPE: "nats-core"
+      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_PROTOCOL: "tcp"
+      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_PROTOCOL: "tcp"
+      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-nats
+      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_HOST: edgex-nats
+      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_SUBSCRIBETOPICS: edgex/events/device/GPIO-Alarm/#
+    depends_on:
+      - consul
+      - metadata
+    security_opt:
+      - no-new-privileges:true
+    user: 2002:2001
+    command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry","--overwrite=true"]
+  app-archive:
+    build:
+      context: app-archive
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:59741:59741"
+    container_name: edgex-app-archive
+    hostname: edgex-app-archive
+    read_only: true
+    restart: always
+    networks:
+      - edgex-network
+    env_file:
+      - common.env
+    environment:
+      SERVICE_HOST: edgex-app-archive
+      TRIGGER_EDGEXMESSAGEBUS_TYPE: "nats-core"
+      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_PROTOCOL: "tcp"
+      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_PROTOCOL: "tcp"
+      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-nats
+    depends_on:
+      - consul
+      - metadata
+    security_opt:
+      - no-new-privileges:true
+    user: 2002:2001
+    volumes:
+      - "./alarm-data:/data"
+    command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry","--overwrite=true"]
+  device-onvif-camera:
+    image: edgexfoundry/device-onvif-camera:0.0.0-dev
+    ports:
+      - "127.0.0.1:59984:59984"
+    container_name: edgex-device-onvif-camera
+    hostname: edgex-device-onvif-camera
+    read_only: true
+    restart: always
+    networks:
+      - edgex-network
+    env_file:
+      - common.env
+    environment:
+      SERVICE_HOST: edgex-device-onvif-camera
+      DEVICE_DISCOVERY_ENABLED: "false"
+      MESSAGEQUEUE_HOST: edgex-nats
+      MESSAGEQUEUE_TYPE: "nats-core"
+      MESSAGEQUEUE_PROTOCOL: "tcp"
+    depends_on:
+      - consul
+      - metadata
+    security_opt:
+      - no-new-privileges:true
+    user: 2002:2001
+    command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry"]
+
+# edgex core services
+  command:
+    container_name: edgex-core-command
+    depends_on:
+      - consul
+      - database
+      - metadata
+    environment:
+      CLIENTS_CORE_COMMAND_HOST: edgex-core-command
+      #CLIENTS_CORE_DATA_HOST: edgex-core-data
+      CLIENTS_CORE_METADATA_HOST: edgex-core-metadata
+      CLIENTS_SUPPORT_NOTIFICATIONS_HOST: edgex-support-notifications
+      CLIENTS_SUPPORT_SCHEDULER_HOST: edgex-support-scheduler
+      DATABASES_PRIMARY_HOST: edgex-redis
+      EDGEX_SECURITY_SECRET_STORE: "false"
+      REGISTRY_HOST: edgex-core-consul
+      SERVICE_HOST: edgex-core-command
+      MESSAGEQUEUE_HOST: edgex-nats
+      MESSAGEQUEUE_TYPE: "nats-core"
+      MESSAGEQUEUE_PROTOCOL: "tcp"
+    hostname: edgex-core-command
+    image: edgexfoundry/core-command:0.0.0-dev
+    networks:
+      edgex-network: {}
+    ports:
+      - 127.0.0.1:59882:59882/tcp
+    read_only: true
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    user: 2002:2001
+  consul:
+    command: agent -ui -bootstrap -server -client 0.0.0.0
+    container_name: edgex-core-consul
+    hostname: edgex-core-consul
+    image: consul:1.12
+    networks:
+      edgex-network: {}
+    ports:
+      - 127.0.0.1:8500:8500/tcp
+    read_only: true
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    user: root:root
+    volumes:
+      - consul-config:/consul/config:z
+      - consul-data:/consul/data:z
+  database:
+    container_name: edgex-redis
+    environment:
+      CLIENTS_CORE_COMMAND_HOST: edgex-core-command
+      #CLIENTS_CORE_DATA_HOST: edgex-core-data
+      CLIENTS_CORE_METADATA_HOST: edgex-core-metadata
+      CLIENTS_SUPPORT_NOTIFICATIONS_HOST: edgex-support-notifications
+      CLIENTS_SUPPORT_SCHEDULER_HOST: edgex-support-scheduler
+      DATABASES_PRIMARY_HOST: edgex-redis
+      EDGEX_SECURITY_SECRET_STORE: "false"
+      REGISTRY_HOST: edgex-core-consul
+    hostname: edgex-redis
+    image: redis:6.2-alpine
+    networks:
+      edgex-network: {}
+    ports:
+      - 127.0.0.1:6379:6379/tcp
+    read_only: true
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    user: root:root
+    volumes:
+      - db-data:/data:z
+  nats:
+    container_name: edgex-nats
+    image: nats:2.9.9
+    ports:
+      - "0.0.0.0:4222:4222"
+    networks:
+      edgex-network: {}
+    restart: unless-stopped
+    command: [ "-c", "/nats-conf/nats-server.conf" ] #, "-js", "--user", "edgex", "--pass", "edgex", "--addr", "edgex-nats", "--tls", "--tlscert", "/certs/server-cert.pem", "--tlskey", "/certs/server-key.pem", "--tlscacert", "/certs/rootCA.pem" ]
+    volumes:
+      - "./mnt/certs:/certs"
+      - "./mnt/nats-conf:/nats-conf"
+      - "./mnt/nsc:/nsc"
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+  metadata:
+    container_name: edgex-core-metadata
+    depends_on:
+      - consul
+      - database
+      - notifications
+    environment:
+      CLIENTS_CORE_COMMAND_HOST: edgex-core-command
+      #CLIENTS_CORE_DATA_HOST: edgex-core-data
+      CLIENTS_CORE_METADATA_HOST: edgex-core-metadata
+      CLIENTS_SUPPORT_NOTIFICATIONS_HOST: edgex-support-notifications
+      CLIENTS_SUPPORT_SCHEDULER_HOST: edgex-support-scheduler
+      DATABASES_PRIMARY_HOST: edgex-redis
+      EDGEX_SECURITY_SECRET_STORE: "false"
+      NOTIFICATIONS_SENDER: edgex-core-metadata
+      REGISTRY_HOST: edgex-core-consul
+      SERVICE_HOST: edgex-core-metadata
+      MESSAGEQUEUE_HOST: edgex-nats
+      MESSAGEQUEUE_TYPE: "nats-core"
+      MESSAGEQUEUE_PROTOCOL: "tcp"
+    hostname: edgex-core-metadata
+    image: edgexfoundry/core-metadata:0.0.0-dev
+    networks:
+      edgex-network: {}
+    ports:
+      - 127.0.0.1:59881:59881/tcp
+    read_only: true
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    user: 2002:2001
+  notifications:
+    container_name: edgex-support-notifications
+    depends_on:
+      - consul
+      - database
+    environment:
+      CLIENTS_CORE_COMMAND_HOST: edgex-core-command
+      #CLIENTS_CORE_DATA_HOST: edgex-core-data
+      CLIENTS_CORE_METADATA_HOST: edgex-core-metadata
+      CLIENTS_SUPPORT_NOTIFICATIONS_HOST: edgex-support-notifications
+      CLIENTS_SUPPORT_SCHEDULER_HOST: edgex-support-scheduler
+      DATABASES_PRIMARY_HOST: edgex-redis
+      EDGEX_SECURITY_SECRET_STORE: "false"
+      REGISTRY_HOST: edgex-core-consul
+      SERVICE_HOST: edgex-support-notifications
+      MESSAGEQUEUE_HOST: edgex-nats
+      MESSAGEQUEUE_TYPE: "nats-core"
+      MESSAGEQUEUE_PROTOCOL: "tcp"
+    hostname: edgex-support-notifications
+    image: edgexfoundry/core-metadata:0.0.0-dev
+    networks:
+      edgex-network: { }
+    ports:
+      - 127.0.0.1:59860:59860/tcp
+    read_only: true
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    user: 2002:2001
+  ui:
+    container_name: edgex-ui-go
+    environment:
+      EDGEX_SECURITY_SECRET_STORE: "false"
+    hostname: edgex-ui-go
+    image: edgexfoundry/edgex-ui-arm64:latest
+    networks:
+      edgex-network: {}
+    ports:
+      - 127.0.0.1:4000:4000/tcp
+    read_only: true
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    user: 2002:2001
+version: '3.7'
+volumes:
+  consul-config: {}
+  consul-data: {}
+  db-data: {}
