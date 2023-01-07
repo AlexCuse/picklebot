@@ -231,6 +231,12 @@ services:
   ui:
     container_name: edgex-ui-go
     environment:
+      CLIENTS_CORE_COMMAND_HOST: edgex-core-command
+      #CLIENTS_CORE_DATA_HOST: edgex-core-data
+      CLIENTS_CORE_METADATA_HOST: edgex-core-metadata
+      CLIENTS_SUPPORT_NOTIFICATIONS_HOST: edgex-support-notifications
+      CLIENTS_SUPPORT_SCHEDULER_HOST: edgex-support-scheduler
+      SERVICE_HOST: edgex-ui-go
       EDGEX_SECURITY_SECRET_STORE: "false"
     hostname: edgex-ui-go
     image: nexus3.edgexfoundry.org:10004/edgex-ui-arm64:latest
