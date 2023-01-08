@@ -1,3 +1,6 @@
+# this compose file assumes locally built docker images for messagebus-connected edgex services
+# to enable NATS as a messagebus option.  These should be built using `make docker-nats`
+# which by default will tag the images as `edgexfoundry:{service-name}:0.0.0-dev
 
 networks:
   edgex-network:
@@ -20,7 +23,10 @@ services:
       - common.env
     environment:
       SERVICE_HOST: edgex-device-gpio-alarm
-      MESSAGEQUEUE_HOST: edgex-redis
+      MESSAGEQUEUE_HOST: edgex-nats
+      MESSAGEQUEUE_PORT: 4222
+      MESSAGEQUEUE_TYPE: "nats-core"
+      MESSAGEQUEUE_PROTOCOL: "tcp"
     depends_on:
       - consul
       - metadata
@@ -45,8 +51,13 @@ services:
       - common.env
     environment:
       SERVICE_HOST: edgex-app-surveillance
-      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-redis
-      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_HOST: edgex-redis
+      TRIGGER_EDGEXMESSAGEBUS_TYPE: "nats-core"
+      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_PROTOCOL: "tcp"
+      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_PROTOCOL: "tcp"
+      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-nats
+      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_PORT: 4222
+      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_HOST: edgex-nats
+      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_PORT: 4222
       TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_SUBSCRIBETOPICS: edgex/events/device/GPIO-Alarm/#
     depends_on:
       - consul
@@ -71,7 +82,13 @@ services:
       - common.env
     environment:
       SERVICE_HOST: edgex-app-archive
-      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-redis
+      TRIGGER_EDGEXMESSAGEBUS_TYPE: "nats-core"
+      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_PROTOCOL: "tcp"
+      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_PROTOCOL: "tcp"
+      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-nats
+      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_PORT: 4222
+      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_HOST: edgex-nats
+      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_PORT: 4222
     depends_on:
       - consul
       - metadata
@@ -82,7 +99,7 @@ services:
       - "./alarm-data:/data"
     command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry","--overwrite=true"]
   device-onvif-camera:
-    image: nexus3.edgexfoundry.org:10004/device-onvif-camera-arm64:latest
+    image: edgexfoundry/device-onvif-camera:0.0.0-dev
     ports:
       - "127.0.0.1:59984:59984"
     container_name: edgex-device-onvif-camera
@@ -96,7 +113,10 @@ services:
     environment:
       SERVICE_HOST: edgex-device-onvif-camera
       DEVICE_DISCOVERY_ENABLED: "false"
-      MESSAGEQUEUE_HOST: edgex-redis
+      MESSAGEQUEUE_HOST: edgex-nats
+      MESSAGEQUEUE_PORT: 4222
+      MESSAGEQUEUE_TYPE: "nats-core"
+      MESSAGEQUEUE_PROTOCOL: "tcp"
     depends_on:
       - consul
       - metadata
@@ -122,8 +142,12 @@ services:
       EDGEX_SECURITY_SECRET_STORE: "false"
       REGISTRY_HOST: edgex-core-consul
       SERVICE_HOST: edgex-core-command
+      MESSAGEQUEUE_HOST: edgex-nats
+      MESSAGEQUEUE_PORT: 4222
+      MESSAGEQUEUE_TYPE: "nats-core"
+      MESSAGEQUEUE_PROTOCOL: "tcp"
     hostname: edgex-core-command
-    image: nexus3.edgexfoundry.org:10004/core-command-arm64:latest
+    image: edgexfoundry/core-command:0.0.0-dev
     networks:
       edgex-network: {}
     ports:
@@ -174,6 +198,23 @@ services:
     user: root:root
     volumes:
       - db-data:/data:z
+  nats:
+    container_name: edgex-nats
+    image: nats:2.9.9
+    ports:
+      - "0.0.0.0:4222:4222"
+    networks:
+      edgex-network: {}
+    restart: unless-stopped
+    command: [ "-c", "/nats-conf/nats-server.conf" ] #, "-js", "--user", "edgex", "--pass", "edgex", "--addr", "edgex-nats", "--tls", "--tlscert", "/certs/server-cert.pem", "--tlskey", "/certs/server-key.pem", "--tlscacert", "/certs/rootCA.pem" ]
+    volumes:
+      - "./mnt/certs:/certs"
+      - "./mnt/nats-conf:/nats-conf"
+      - "./mnt/nsc:/nsc"
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
   metadata:
     container_name: edgex-core-metadata
     depends_on:
@@ -191,8 +232,12 @@ services:
       NOTIFICATIONS_SENDER: edgex-core-metadata
       REGISTRY_HOST: edgex-core-consul
       SERVICE_HOST: edgex-core-metadata
+      MESSAGEQUEUE_HOST: edgex-nats
+      MESSAGEQUEUE_PORT: 4222
+      MESSAGEQUEUE_TYPE: "nats-core"
+      MESSAGEQUEUE_PROTOCOL: "tcp"
     hostname: edgex-core-metadata
-    image: nexus3.edgexfoundry.org:10004/core-metadata-arm64:latest
+    image: edgexfoundry/core-metadata:0.0.0-dev
     networks:
       edgex-network: {}
     ports:
@@ -217,8 +262,12 @@ services:
       EDGEX_SECURITY_SECRET_STORE: "false"
       REGISTRY_HOST: edgex-core-consul
       SERVICE_HOST: edgex-support-notifications
+      MESSAGEQUEUE_HOST: edgex-nats
+      MESSAGEQUEUE_PORT: 4222
+      MESSAGEQUEUE_TYPE: "nats-core"
+      MESSAGEQUEUE_PROTOCOL: "tcp"
     hostname: edgex-support-notifications
-    image: nexus3.edgexfoundry.org:10004/support-notifications-arm64:latest
+    image: edgexfoundry/support-notifications:0.0.0-dev
     networks:
       edgex-network: { }
     ports:
@@ -239,7 +288,7 @@ services:
       SERVICE_HOST: edgex-ui-go
       EDGEX_SECURITY_SECRET_STORE: "false"
     hostname: edgex-ui-go
-    image: nexus3.edgexfoundry.org:10004/edgex-ui-arm64:latest
+    image: edgexfoundry/edgex-ui-arm64:2.3.0
     networks:
       edgex-network: {}
     ports:
