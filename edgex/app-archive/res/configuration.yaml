@@ -1,0 +1,20 @@
+Writable:
+  LogLevel: "INFO"
+  Telemetry:
+    Interval: "0s"
+
+Service:
+  Port: 59741
+  StartupMsg: "app-archive started"
+
+MessageBus:
+  Disabled: false
+  Optional:
+    ClientId: "app-archive"
+    AutoProvision: "false" #only for one service
+Trigger:
+  Type: "edgex-messagebus"
+  SubscribeTopics: "alarms/acknowledged"
+ApplicationSettings:
+  BasePath: "/data"
+  ImageResourceName: "Snapshot"

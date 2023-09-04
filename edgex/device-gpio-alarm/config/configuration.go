@@ -25,7 +25,7 @@ type ServiceConfig struct {
 }
 
 // AlarmConfig is example of service's custom structured configuration that is specified in the service's
-// configuration.toml file and Configuration Provider (aka Consul), if enabled.
+// configuration.yaml file and Configuration Provider (aka Consul), if enabled.
 type AlarmConfig struct {
 	Writable AlarmWritable
 	AlertPin int

@@ -1,4 +1,4 @@
-FROM golang:1.18-alpine3.16 AS builder
+FROM golang:1.20-alpine AS builder
 
 WORKDIR /build
 
@@ -19,4 +19,4 @@ COPY --from=builder /build/app-surveillance /app-surveillance
 COPY --from=builder /build/res /res
 
 ENTRYPOINT ["/app-surveillance"]
-CMD ["-cp=consul.http://localhost:8500", "--registry", "--confdir=/res"]
+CMD ["-cp=consul.http://localhost:8500", "--registry", "--configDir=/res"]
