@@ -19,4 +19,4 @@ COPY --from=builder /build/app-archive /app-archive
 COPY --from=builder /build/res /res
 
 ENTRYPOINT ["/app-archive"]
-CMD ["-cp=consul.http://localhost:8500", "--registry", "--confdir=/res"]
+CMD ["-cp=consul.http://localhost:8500", "--registry", , "-cf=/res/configuration.yaml", "-cc=/res/commonconfiguration.yaml"]

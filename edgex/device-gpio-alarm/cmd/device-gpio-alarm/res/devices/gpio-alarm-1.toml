@@ -1,9 +1,0 @@
-[[DeviceList]]
-  Name = "GPIO-Alarm-1"
-  ProfileName = "GPIO-Alarm"
-  Description = "Example GPIO Alarm"
-  Labels = [ "rp4" ]
-  [DeviceList.Protocols]
-  [DeviceList.Protocols.other]
-    Address = "gpio-alarm"
-    Port = "300"
