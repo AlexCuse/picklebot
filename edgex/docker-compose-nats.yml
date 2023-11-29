@@ -10,7 +10,7 @@ services:
   device-gpio-alarm:
     build:
       context: device-gpio-alarm
-      dockerfile: device-gpio-alarm/Dockerfile
+      dockerfile: Dockerfile
     ports:
       - "127.0.0.1:59985:59985"
     container_name: edgex-device-gpio-alarm
