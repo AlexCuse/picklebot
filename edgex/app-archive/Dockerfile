@@ -12,7 +12,7 @@ COPY . .
 
 RUN make build
 
-FROM alpine:3.16
+FROM alpine:3.18.4
 
 WORKDIR /
 COPY --from=builder /build/app-archive /app-archive
