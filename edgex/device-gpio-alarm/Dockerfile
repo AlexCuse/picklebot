@@ -15,8 +15,8 @@ RUN make build
 FROM alpine:3.18.4
 
 WORKDIR /
-COPY --from=builder /build/app-archive /app-archive
+COPY --from=builder /build/device-gpio-alarm /device-gpio-alarm
 COPY --from=builder /build/res /res
 
-ENTRYPOINT ["/app-archive"]
-CMD ["-cp=consul.http://localhost:8500", "--registry", , "-cf=/res/configuration.yaml", "-cc=/res/commonconfiguration.yaml"]
+ENTRYPOINT ["/device-gpio-alarm"]
+CMD ["-cp=consul.http://localhost:8500", "--registry", "-cf=/res/configuration.yaml", "-cc=/res/commonconfiguration.yaml"]

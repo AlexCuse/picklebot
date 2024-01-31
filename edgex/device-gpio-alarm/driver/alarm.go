@@ -23,15 +23,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/models"
-	"github.com/warthog618/gpiod"
-
 	"github.com/alexcuse/picklebot/edgex/device-gpio-alarm/config"
-	sdkModels "github.com/edgexfoundry/device-sdk-go/v2/pkg/models"
-	"github.com/edgexfoundry/device-sdk-go/v2/pkg/service"
+	"github.com/edgexfoundry/device-sdk-go/v3/pkg/interfaces"
+	sdkModels "github.com/edgexfoundry/device-sdk-go/v3/pkg/models"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/models"
+	"github.com/warthog618/gpiod"
 )
+
+var _ interfaces.ProtocolDriver = &Alarm{}
 
 type Alarm struct {
 	lc            logger.LoggingClient
@@ -63,14 +64,15 @@ func (s *Alarm) trigger(level string) {
 
 // Initialize performs protocol-specific initialization for the device
 // service.
-func (s *Alarm) Initialize(lc logger.LoggingClient, asyncCh chan<- *sdkModels.AsyncValues, deviceCh chan<- []sdkModels.DiscoveredDevice) error {
+func (s *Alarm) Initialize(sdk interfaces.DeviceServiceSDK) error {
+	lc := sdk.LoggingClient()
 	s.lc = lc
-	s.asyncCh = asyncCh
-	s.deviceCh = deviceCh
+	s.asyncCh = sdk.AsyncValuesChannel()
+	s.deviceCh = sdk.DiscoveredDeviceChannel()
 	s.serviceConfig = &config.ServiceConfig{}
 	s.alarms = make(map[string]*alarmPin)
 
-	ds := service.RunningService()
+	ds := sdk
 
 	if err := ds.LoadCustomConfig(s.serviceConfig, "Alarm"); err != nil {
 		return fmt.Errorf("unable to load 'Alarm' custom configuration: %s", err.Error())
@@ -93,8 +95,11 @@ func (s *Alarm) Initialize(lc logger.LoggingClient, asyncCh chan<- *sdkModels.As
 		s.alarms[k] = &alarmPin{ch: make(chan alarmEvent, 10), pin: v.Pin}
 	}
 
-	s.listen()
+	return nil
+}
 
+func (s *Alarm) Start() error {
+	s.listen()
 	return nil
 }
 
@@ -295,6 +300,12 @@ func (s *Alarm) RemoveDevice(deviceName string, protocols map[string]models.Prot
 
 // Discover triggers protocol specific device discovery, which is an asynchronous operation.
 // Devices found as part of this discovery operation are written to the channel devices.
-func (s *Alarm) Discover() {
+func (s *Alarm) Discover() error {
+	return nil
+}
 
+// ValidateDevice triggers device's protocol properties validation, returns error
+// if validation failed and the incoming device will not be added into EdgeX.
+func (s *Alarm) ValidateDevice(d models.Device) error {
+	return nil
 }

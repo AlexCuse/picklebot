@@ -1,0 +1,69 @@
+Writable:
+  LogLevel: INFO
+  InsecureSecrets:
+    DB:
+      path: redisdb
+      Secrets:
+        username: ''
+        password: ''
+Service:
+  HealthCheckInterval: 10s
+  Host: localhost
+  Port: 59985
+  ServerBindAddr: ''
+  StartupMsg: device-gpio-alarm started
+  MaxRequestSize: 0
+  RequestTimeout: 20s
+  CORSConfiguration:
+    EnableCORS: false
+    CORSAllowCredentials: false
+    CORSAllowedOrigin: 'https://localhost'
+    CORSAllowedMethods: 'GET, POST, PUT, PATCH, DELETE'
+    CORSAllowedHeaders: >-
+      Authorization, Accept, Accept-Language, Content-Language, Content-Type,
+      X-Correlation-ID
+    CORSExposeHeaders: >-
+      Cache-Control, Content-Language, Content-Length, Content-Type, Expires,
+      Last-Modified, Pragma, X-Correlation-ID
+    CORSMaxAge: 3600
+Registry:
+  Host: localhost
+  Port: 8500
+  Type: consul
+Clients:
+  core-metadata:
+    Protocol: http
+    Host: localhost
+    Port: 59881
+Device:
+  DataTransform: true
+  MaxCmdOps: 128
+  MaxCmdValueLen: 256
+  ProfilesDir: ./res/profiles
+  DevicesDir: ./res/devices
+  UpdateLastConnected: false
+  AsyncBufferSize: 1
+  EnableAsyncReadings: true
+  Labels: []
+  UseMessageBus: true
+  Discovery:
+    Enabled: false
+    Interval: 30s
+Alarm:
+  AlertPin: 12
+  Chip: gpiochip0
+  Name: GPIO-Alarm-1
+  DefaultLevel: default
+  RequireAck: true
+  Alarms:
+    low:
+      Pin: 23
+      DefaultMessage: this is fine
+    default:
+      Pin: 18
+      DefaultMessage: got it
+    high:
+      Pin: 16
+      DefaultMessage: SOS SOS
+  Writable:
+    AlarmDuration: 5s

@@ -1,38 +1,21 @@
-// TODO: Change Copyright to your company if open sourcing or remove header
-//
-// Copyright (c) 2021 Intel Corporation
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package functions
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
-
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/common"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/common"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos"
 )
 
-// NewSample ...
-func NewSample(cameraName, snapshotCommandName string) Sample {
-	return Sample{cameraName: cameraName, snapshotCommandName: snapshotCommandName, ackCommand: "Acknowledge"}
+// NewPipeline ...
+func NewPipeline(cameraName, snapshotCommandName string) Pipeline {
+	return Pipeline{cameraName: cameraName, snapshotCommandName: snapshotCommandName, ackCommand: "Acknowledge"}
 }
 
-// Sample ...
-type Sample struct {
+// Pipeline ...
+type Pipeline struct {
 	cameraName          string
 	snapshotCommandName string
 	ackCommand          string
@@ -40,7 +23,7 @@ type Sample struct {
 
 // LogEventDetails is example of processing an Event and passing the original Event to next function in the pipeline
 // For more details on the Context API got here: https://docs.edgexfoundry.org/1.3/microservices/application/ContextAPI/
-func (s *Sample) LogEventDetails(ctx interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
+func (s *Pipeline) LogEventDetails(ctx interfaces.AppFunctionContext, data interface{}) (bool, interface{}) {
 	lc := ctx.LoggingClient()
 	receiveTopic, _ := ctx.GetValue(interfaces.RECEIVEDTOPIC)
 
