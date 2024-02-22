@@ -7,7 +7,7 @@ services:
   device-gpio-alarm:
     build:
       context: device-gpio-alarm
-      dockerfile: device-gpio-alarm/Dockerfile
+      dockerfile: Dockerfile
     ports:
       - "127.0.0.1:59985:59985"
     container_name: edgex-device-gpio-alarm
@@ -45,9 +45,9 @@ services:
       - common.env
     environment:
       SERVICE_HOST: edgex-app-surveillance
-      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-redis
-      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_HOST: edgex-redis
-      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_SUBSCRIBETOPICS: edgex/events/device/GPIO-Alarm/#
+      MESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-redis
+      MESSAGEBUS_PUBLISHHOST_HOST: edgex-redis
+      MESSAGEBUS_SUBSCRIBEHOST_SUBSCRIBETOPICS: edgex/events/device/GPIO-Alarm/#
     depends_on:
       - consul
       - metadata
@@ -71,7 +71,7 @@ services:
       - common.env
     environment:
       SERVICE_HOST: edgex-app-archive
-      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-redis
+      MESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-redis
     depends_on:
       - consul
       - metadata
