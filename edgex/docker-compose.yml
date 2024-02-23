@@ -28,7 +28,7 @@ services:
     security_opt:
       - no-new-privileges:true
     user: root
-    command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry","--overwrite=true"]
+    command: ["-cp=consul.http://edgex-core-consul:8500", "--registry", "-cf=/res/configuration.yaml", "-cc=/res/commonconfiguration.yaml"]
   app-surveillance:
     build:
       context: app-surveillance
@@ -54,7 +54,7 @@ services:
     security_opt:
       - no-new-privileges:true
     user: 2002:2001
-    command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry","--overwrite=true"]
+    command: ["-cp=consul.http://edgex-core-consul:8500", "--registry", "-cf=/res/configuration.yaml", "-cc=/res/commonconfiguration.yaml"]
   app-archive:
     build:
       context: app-archive
@@ -80,7 +80,7 @@ services:
     user: 2002:2001
     volumes:
       - "./alarm-data:/data"
-    command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry","--overwrite=true"]
+    command: ["-cp=consul.http://edgex-core-consul:8500", "--registry", "-cf=/res/configuration.yaml", "-cc=/res/commonconfiguration.yaml"]
   device-onvif-camera:
     image: edgexfoundry/device-onvif-camera-arm64:3.1.0
     ports:
@@ -103,7 +103,7 @@ services:
     security_opt:
       - no-new-privileges:true
     user: 2002:2001
-    command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry"]
+    command: ["-cp=consul.http://edgex-core-consul:8500", "--registry", "-cf=/res/configuration.yaml", "-cc=/res/commonconfiguration.yaml"]
 
 # edgex core services
   command:

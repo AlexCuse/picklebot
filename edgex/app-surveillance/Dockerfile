@@ -19,4 +19,4 @@ COPY --from=builder /build/app-surveillance /app-surveillance
 COPY --from=builder /build/res /res
 
 ENTRYPOINT ["/app-surveillance"]
-CMD ["-cp=consul.http://localhost:8500", "--registry", , "-cf=/res/configuration.yaml", "-cc=/res/commonconfiguration.yaml"]
+CMD ["-cp=consul.http://localhost:8500", "--registry", "-cf=/res/configuration.yaml", "-cc=/res/commonconfiguration.yaml"]
