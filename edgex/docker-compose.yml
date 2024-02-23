@@ -82,7 +82,7 @@ services:
       - "./alarm-data:/data"
     command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry","--overwrite=true"]
   device-onvif-camera:
-    image: nexus3.edgexfoundry.org:10004/device-onvif-camera-arm64:latest
+    image: edgexfoundry/device-onvif-camera-arm64:3.1.0
     ports:
       - "127.0.0.1:59984:59984"
     container_name: edgex-device-onvif-camera
@@ -123,7 +123,7 @@ services:
       REGISTRY_HOST: edgex-core-consul
       SERVICE_HOST: edgex-core-command
     hostname: edgex-core-command
-    image: nexus3.edgexfoundry.org:10004/core-command-arm64:latest
+    image: edgexfoundry/core-command-arm64:3.1.0
     networks:
       edgex-network: {}
     ports:
@@ -192,7 +192,7 @@ services:
       REGISTRY_HOST: edgex-core-consul
       SERVICE_HOST: edgex-core-metadata
     hostname: edgex-core-metadata
-    image: nexus3.edgexfoundry.org:10004/core-metadata-arm64:latest
+    image: edgexfoundry/core-metadata-arm64:3.1.0
     networks:
       edgex-network: {}
     ports:
@@ -218,7 +218,7 @@ services:
       REGISTRY_HOST: edgex-core-consul
       SERVICE_HOST: edgex-support-notifications
     hostname: edgex-support-notifications
-    image: nexus3.edgexfoundry.org:10004/support-notifications-arm64:latest
+    image: edgexfoundry/support-notifications-arm64:3.1.0
     networks:
       edgex-network: { }
     ports:
@@ -239,7 +239,7 @@ services:
       SERVICE_HOST: edgex-ui-go
       EDGEX_SECURITY_SECRET_STORE: "false"
     hostname: edgex-ui-go
-    image: nexus3.edgexfoundry.org:10004/edgex-ui-arm64:latest
+    image: edgexfoundry/edgex-ui-arm64:3.1.0
     networks:
       edgex-network: {}
     ports:
