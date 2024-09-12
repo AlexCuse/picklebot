@@ -1,19 +1,3 @@
-//
-// Copyright (c) 2022 One Track Consulting
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-
 package main
 
 import (
@@ -24,9 +8,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/dtos"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/dtos"
 )
 
 var (
@@ -58,14 +42,14 @@ func main() {
 	//use this to process using default pipeline only
 	err = service.SetDefaultFunctionsPipeline(savePNG)
 	if err != nil {
-		service.LoggingClient().Errorf("SetDefaultFunctionsPipeline returned error: %s", err.Error())
+		service.LoggingClient().Errorf("SetDefaultFunctionsPipeline returned error: %w", err)
 		os.Exit(-1)
 	}
 
 	// Lastly, we'll go ahead and tell the SDK to "start" and begin listening for events
-	err = service.MakeItRun()
+	err = service.Run()
 	if err != nil {
-		service.LoggingClient().Error("MakeItRun returned error: ", err.Error())
+		service.LoggingClient().Error("MakeItRun returned error: %w", err)
 		os.Exit(-1)
 	}
 

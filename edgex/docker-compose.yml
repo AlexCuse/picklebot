@@ -7,7 +7,7 @@ services:
   device-gpio-alarm:
     build:
       context: device-gpio-alarm
-      dockerfile: cmd/device-gpio-alarm/Dockerfile
+      dockerfile: Dockerfile
     ports:
       - "127.0.0.1:59985:59985"
     container_name: edgex-device-gpio-alarm
@@ -28,7 +28,7 @@ services:
     security_opt:
       - no-new-privileges:true
     user: root
-    command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry","--overwrite=true"]
+    command: ["-cp=consul.http://edgex-core-consul:8500", "--registry", "-cf=/res/configuration.yaml", "-cc=/res/commonconfiguration.yaml"]
   app-surveillance:
     build:
       context: app-surveillance
@@ -45,16 +45,16 @@ services:
       - common.env
     environment:
       SERVICE_HOST: edgex-app-surveillance
-      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-redis
-      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_HOST: edgex-redis
-      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_SUBSCRIBETOPICS: edgex/events/device/GPIO-Alarm/#
+      MESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-redis
+      MESSAGEBUS_PUBLISHHOST_HOST: edgex-redis
+      MESSAGEBUS_SUBSCRIBEHOST_SUBSCRIBETOPICS: edgex/events/device/GPIO-Alarm/#
     depends_on:
       - consul
       - metadata
     security_opt:
       - no-new-privileges:true
     user: 2002:2001
-    command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry","--overwrite=true"]
+    command: ["-cp=consul.http://edgex-core-consul:8500", "--registry", "-cf=/res/configuration.yaml", "-cc=/res/commonconfiguration.yaml"]
   app-archive:
     build:
       context: app-archive
@@ -71,7 +71,7 @@ services:
       - common.env
     environment:
       SERVICE_HOST: edgex-app-archive
-      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-redis
+      MESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-redis
     depends_on:
       - consul
       - metadata
@@ -80,9 +80,9 @@ services:
     user: 2002:2001
     volumes:
       - "./alarm-data:/data"
-    command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry","--overwrite=true"]
+    command: ["-cp=consul.http://edgex-core-consul:8500", "--registry", "-cf=/res/configuration.yaml", "-cc=/res/commonconfiguration.yaml"]
   device-onvif-camera:
-    image: nexus3.edgexfoundry.org:10004/device-onvif-camera-arm64:latest
+    image: edgexfoundry/device-onvif-camera-arm64:3.1.0
     ports:
       - "127.0.0.1:59984:59984"
     container_name: edgex-device-onvif-camera
@@ -103,7 +103,7 @@ services:
     security_opt:
       - no-new-privileges:true
     user: 2002:2001
-    command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry"]
+    command: ["-cp=consul.http://edgex-core-consul:8500", "--registry", "-cf=/res/configuration.yaml", "-cc=/res/commonconfiguration.yaml"]
 
 # edgex core services
   command:
@@ -123,7 +123,7 @@ services:
       REGISTRY_HOST: edgex-core-consul
       SERVICE_HOST: edgex-core-command
     hostname: edgex-core-command
-    image: nexus3.edgexfoundry.org:10004/core-command-arm64:latest
+    image: edgexfoundry/core-command-arm64:3.1.0
     networks:
       edgex-network: {}
     ports:
@@ -192,7 +192,7 @@ services:
       REGISTRY_HOST: edgex-core-consul
       SERVICE_HOST: edgex-core-metadata
     hostname: edgex-core-metadata
-    image: nexus3.edgexfoundry.org:10004/core-metadata-arm64:latest
+    image: edgexfoundry/core-metadata-arm64:3.1.0
     networks:
       edgex-network: {}
     ports:
@@ -218,7 +218,7 @@ services:
       REGISTRY_HOST: edgex-core-consul
       SERVICE_HOST: edgex-support-notifications
     hostname: edgex-support-notifications
-    image: nexus3.edgexfoundry.org:10004/support-notifications-arm64:latest
+    image: edgexfoundry/support-notifications-arm64:3.1.0
     networks:
       edgex-network: { }
     ports:
@@ -239,7 +239,7 @@ services:
       SERVICE_HOST: edgex-ui-go
       EDGEX_SECURITY_SECRET_STORE: "false"
     hostname: edgex-ui-go
-    image: nexus3.edgexfoundry.org:10004/edgex-ui-arm64:latest
+    image: edgexfoundry/edgex-ui-arm64:3.1.0
     networks:
       edgex-network: {}
     ports:

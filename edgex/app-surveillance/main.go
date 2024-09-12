@@ -1,19 +1,3 @@
-//
-// Copyright (c) 2022 One Track Consulting
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-
 package main
 
 import (
@@ -22,9 +6,9 @@ import (
 
 	"github.com/alexcuse/picklebot/edgex/app-surveillance/config"
 	"github.com/alexcuse/picklebot/edgex/app-surveillance/functions"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg"
-	"github.com/edgexfoundry/app-functions-sdk-go/v2/pkg/interfaces"
-	"github.com/edgexfoundry/go-mod-core-contracts/v2/clients/logger"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg"
+	"github.com/edgexfoundry/app-functions-sdk-go/v3/pkg/interfaces"
+	"github.com/edgexfoundry/go-mod-core-contracts/v3/clients/logger"
 )
 
 const (
@@ -78,7 +62,7 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 		return -1
 	}
 
-	sample := functions.NewSample(app.serviceConfig.Surveillance.CameraName, app.serviceConfig.Surveillance.SnapshotCommandName)
+	sample := functions.NewPipeline(app.serviceConfig.Surveillance.CameraName, app.serviceConfig.Surveillance.SnapshotCommandName)
 
 	var err error
 
@@ -90,12 +74,12 @@ func (app *myApp) CreateAndRunAppService(serviceKey string, newServiceFactory fu
 		sample.Acknowledge,
 		sample.LogEventDetails)
 	if err != nil {
-		app.lc.Errorf("AddFunctionsPipelineForTopic returned error: %s", err.Error())
+		app.lc.Errorf("SetDefaultFunctionsPipeline returned error: %w", err)
 		return -1
 	}
 
-	if err := app.service.MakeItRun(); err != nil {
-		app.lc.Errorf("MakeItRun returned error: %s", err.Error())
+	if err := app.service.Run(); err != nil {
+		app.lc.Errorf("Run returned error: %w", err)
 		return -1
 	}
 

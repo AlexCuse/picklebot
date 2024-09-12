@@ -9,8 +9,8 @@ networks:
 services:
   device-gpio-alarm:
     build:
-      context: device-gpio-alarm
-      dockerfile: cmd/device-gpio-alarm/Dockerfile
+      context: device-gpio-alarm/
+      dockerfile: Dockerfile
     ports:
       - "127.0.0.1:59985:59985"
     container_name: edgex-device-gpio-alarm
@@ -23,10 +23,10 @@ services:
       - common.env
     environment:
       SERVICE_HOST: edgex-device-gpio-alarm
-      MESSAGEQUEUE_HOST: edgex-nats
-      MESSAGEQUEUE_PORT: 4222
-      MESSAGEQUEUE_TYPE: "nats-core"
-      MESSAGEQUEUE_PROTOCOL: "tcp"
+      MESSAGEBUS_HOST: edgex-nats
+      MESSAGEBUS_PORT: 4222
+      MESSAGEBUS_TYPE: "nats-core"
+      MESSAGEBUS_PROTOCOL: "tcp"
     depends_on:
       - consul
       - metadata
@@ -34,7 +34,7 @@ services:
     security_opt:
       - no-new-privileges:true
     user: root
-    command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry","--overwrite=true"]
+    command: ["-cp=consul.http://edgex-core-consul:8500", "--registry", "-cf=/res/configuration.yaml", "-cc=/res/commonconfiguration.yaml"]
   app-surveillance:
     build:
       context: app-surveillance
@@ -51,21 +51,21 @@ services:
       - common.env
     environment:
       SERVICE_HOST: edgex-app-surveillance
-      TRIGGER_EDGEXMESSAGEBUS_TYPE: "nats-core"
-      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_PROTOCOL: "tcp"
-      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_PROTOCOL: "tcp"
-      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-nats
-      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_PORT: 4222
-      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_HOST: edgex-nats
-      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_PORT: 4222
-      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_SUBSCRIBETOPICS: edgex/events/device/GPIO-Alarm/#
+      MESSAGEBUS_TYPE: "nats-core"
+      MESSAGEBUS_PUBLISHHOST_PROTOCOL: "tcp"
+      MESSAGEBUS_SUBSCRIBEHOST_PROTOCOL: "tcp"
+      MESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-nats
+      MESSAGEBUS_SUBSCRIBEHOST_PORT: 4222
+      MESSAGEBUS_PUBLISHHOST_HOST: edgex-nats
+      MESSAGEBUS_PUBLISHHOST_PORT: 4222
+      MESSAGEBUS_SUBSCRIBEHOST_SUBSCRIBETOPICS: edgex/events/device/GPIO-Alarm/#
     depends_on:
       - consul
       - metadata
     security_opt:
       - no-new-privileges:true
     user: 2002:2001
-    command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry","--overwrite=true"]
+    command: ["-cp=consul.http://edgex-core-consul:8500", "--registry", "-cf=/res/configuration.yaml", "-cc=/res/commonconfiguration.yaml"]
   app-archive:
     build:
       context: app-archive
@@ -82,13 +82,13 @@ services:
       - common.env
     environment:
       SERVICE_HOST: edgex-app-archive
-      TRIGGER_EDGEXMESSAGEBUS_TYPE: "nats-core"
-      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_PROTOCOL: "tcp"
-      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_PROTOCOL: "tcp"
-      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-nats
-      TRIGGER_EDGEXMESSAGEBUS_SUBSCRIBEHOST_PORT: 4222
-      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_HOST: edgex-nats
-      TRIGGER_EDGEXMESSAGEBUS_PUBLISHHOST_PORT: 4222
+      MESSAGEBUS_TYPE: "nats-core"
+      MESSAGEBUS_PUBLISHHOST_PROTOCOL: "tcp"
+      MESSAGEBUS_SUBSCRIBEHOST_PROTOCOL: "tcp"
+      MESSAGEBUS_SUBSCRIBEHOST_HOST: edgex-nats
+      MESSAGEBUS_SUBSCRIBEHOST_PORT: 4222
+      MESSAGEBUS_PUBLISHHOST_HOST: edgex-nats
+      MESSAGEBUS_PUBLISHHOST_PORT: 4222
     depends_on:
       - consul
       - metadata
@@ -97,7 +97,7 @@ services:
     user: 2002:2001
     volumes:
       - "./alarm-data:/data"
-    command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry","--overwrite=true"]
+    command: ["-cp=consul.http://edgex-core-consul:8500", "--registry", "-cf=/res/configuration.yaml", "-cc=/res/commonconfiguration.yaml"]
   device-onvif-camera:
     image: edgexfoundry/device-onvif-camera:0.0.0-dev
     ports:
@@ -113,17 +113,17 @@ services:
     environment:
       SERVICE_HOST: edgex-device-onvif-camera
       DEVICE_DISCOVERY_ENABLED: "false"
-      MESSAGEQUEUE_HOST: edgex-nats
-      MESSAGEQUEUE_PORT: 4222
-      MESSAGEQUEUE_TYPE: "nats-core"
-      MESSAGEQUEUE_PROTOCOL: "tcp"
+      MESSAGEBUS_HOST: edgex-nats
+      MESSAGEBUS_PORT: 4222
+      MESSAGEBUS_TYPE: "nats-core"
+      MESSAGEBUS_PROTOCOL: "tcp"
     depends_on:
       - consul
       - metadata
     security_opt:
       - no-new-privileges:true
     user: 2002:2001
-    command: ["-cp=consul.http://edgex-core-consul:8500", "--confdir=/res", "--registry"]
+    command: ["-cp=consul.http://edgex-core-consul:8500", "--registry", "-cf=/res/configuration.yaml", "-cc=/res/commonconfiguration.yaml"]
 
 # edgex core services
   command:
@@ -142,10 +142,10 @@ services:
       EDGEX_SECURITY_SECRET_STORE: "false"
       REGISTRY_HOST: edgex-core-consul
       SERVICE_HOST: edgex-core-command
-      MESSAGEQUEUE_HOST: edgex-nats
-      MESSAGEQUEUE_PORT: 4222
-      MESSAGEQUEUE_TYPE: "nats-core"
-      MESSAGEQUEUE_PROTOCOL: "tcp"
+      MESSAGEBUS_HOST: edgex-nats
+      MESSAGEBUS_PORT: 4222
+      MESSAGEBUS_TYPE: "nats-core"
+      MESSAGEBUS_PROTOCOL: "tcp"
     hostname: edgex-core-command
     image: edgexfoundry/core-command:0.0.0-dev
     networks:
@@ -232,10 +232,10 @@ services:
       NOTIFICATIONS_SENDER: edgex-core-metadata
       REGISTRY_HOST: edgex-core-consul
       SERVICE_HOST: edgex-core-metadata
-      MESSAGEQUEUE_HOST: edgex-nats
-      MESSAGEQUEUE_PORT: 4222
-      MESSAGEQUEUE_TYPE: "nats-core"
-      MESSAGEQUEUE_PROTOCOL: "tcp"
+      MESSAGEBUS_HOST: edgex-nats
+      MESSAGEBUS_PORT: 4222
+      MESSAGEBUS_TYPE: "nats-core"
+      MESSAGEBUS_PROTOCOL: "tcp"
     hostname: edgex-core-metadata
     image: edgexfoundry/core-metadata:0.0.0-dev
     networks:
@@ -262,10 +262,10 @@ services:
       EDGEX_SECURITY_SECRET_STORE: "false"
       REGISTRY_HOST: edgex-core-consul
       SERVICE_HOST: edgex-support-notifications
-      MESSAGEQUEUE_HOST: edgex-nats
-      MESSAGEQUEUE_PORT: 4222
-      MESSAGEQUEUE_TYPE: "nats-core"
-      MESSAGEQUEUE_PROTOCOL: "tcp"
+      MESSAGEBUS_HOST: edgex-nats
+      MESSAGEBUS_PORT: 4222
+      MESSAGEBUS_TYPE: "nats-core"
+      MESSAGEBUS_PROTOCOL: "tcp"
     hostname: edgex-support-notifications
     image: edgexfoundry/support-notifications:0.0.0-dev
     networks:
